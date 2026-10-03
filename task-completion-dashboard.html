@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-page-node-id="Bilps20ZCnzjaRbLXaawU5">
+<head data-page-node-id="KM26ZdVCiRyp4JiQmhaNKJ">
+<meta charset="UTF-8" data-page-node-id="UcaZsMF6n6mwPPtLmFG2H6" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" data-page-node-id="v8QT9pWKuOGr9JjHgBXMbD" />
+<title>AI Agent 开发任务完成情况看板</title>
+<style>
+  :root{
+    --bg:#f6f8fb; --card:#ffffff; --ink:#1f2733; --sub:#5b6675;
+    --line:#e6ebf1; --green:#1f9d55; --greenbg:#e7f6ee; --blue:#2f6fed;
+    --amber:#c2820a; --amberbg:#fdf3e0; --red:#d23b3b; --redbg:#fdeaea;
+    --chip:#eef2f7;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+    line-height:1.6;}
+  .wrap{max-width:1080px;margin:0 auto;padding:28px 22px 60px;}
+  header{background:linear-gradient(120deg,#2f6fed,#1f9d55);color:#fff;border-radius:16px;
+    padding:26px 28px;box-shadow:0 8px 24px rgba(47,111,237,.18);}
+  header h1{margin:0 0 6px;font-size:24px;letter-spacing:.5px}
+  header p{margin:0;opacity:.92;font-size:13.5px}
+  .meta{margin-top:12px;font-size:12.5px;opacity:.9}
+  .summary{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:22px 0}
+  .stat{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 16px;text-align:center}
+  .stat .n{font-size:30px;font-weight:700;color:var(--blue)}
+  .stat .n.green{color:var(--green)}
+  .stat .l{font-size:12.5px;color:var(--sub);margin-top:4px}
+  .bar{height:10px;border-radius:6px;background:var(--chip);overflow:hidden;margin-top:8px}
+  .bar > i{display:block;height:100%;background:var(--green)}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px 22px;margin:18px 0}
+  .card > h2{margin:0 0 4px;font-size:18px;display:flex;align-items:center;gap:10px}
+  .badge{font-size:11.5px;font-weight:600;padding:3px 9px;border-radius:999px}
+  .b-done{background:var(--greenbg);color:var(--green)}
+  .b-part{background:var(--amberbg);color:var(--amber)}
+  .b-todo{background:var(--redbg);color:var(--red)}
+  .desc{color:var(--sub);font-size:13px;margin:6px 0 14px}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{color:var(--sub);font-weight:600;font-size:12px;background:#fafbfc}
+  td.ok{color:var(--green);font-weight:600}
+  td.no{color:var(--red);font-weight:600}
+  .tag{display:inline-block;background:var(--chip);color:var(--sub);font-size:11px;
+    padding:2px 7px;border-radius:6px;margin:1px 3px 1px 0}
+  .verify{background:var(--greenbg);border:1px solid #bfe6cf;border-radius:12px;padding:14px 18px;margin-top:8px}
+  .verify b{color:var(--green)}
+  .steps{counter-reset:s;list-style:none;padding:0;margin:8px 0 0}
+  .steps li{position:relative;padding:8px 0 8px 38px;border-bottom:1px dashed var(--line);font-size:13.5px}
+  .steps li:before{counter-increment:s;content:counter(s);position:absolute;left:0;top:8px;
+    width:24px;height:24px;border-radius:50%;background:var(--blue);color:#fff;
+    font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center}
+  .links{display:flex;flex-wrap:wrap;gap:10px;margin-top:10px}
+  .links a{text-decoration:none;color:var(--blue);background:var(--chip);padding:7px 13px;
+    border-radius:8px;font-size:12.5px;font-weight:600}
+  code{background:#eef2f7;padding:1px 6px;border-radius:5px;font-size:12px}
+  .note{font-size:12.5px;color:var(--sub);margin-top:6px}
+  footer{text-align:center;color:var(--sub);font-size:12px;margin-top:26px}
+</style>
+</head>
+<body data-page-node-id="JKtN0FYqPSzAmZ3aaEc5QT">
+<div class="wrap" data-page-node-id="eMAAP6TCsvuNX035JGPxtY">
+
+  <header data-page-node-id="swQUFpiQovj21K13VMMGOK">
+    <h1 data-page-node-id="A8LA3FulTNq5VDB108k2dv">🛫 AI Agent 开发任务完成情况看板</h1>
+    <p data-page-node-id="cPNe9DYhRUdl1asmbZNbxv">项目：ai_agent · 前端 ftnd (Next.js) + 后端 bknd (NestJS) · 数据 Postgres + Redis</p>
+    <div class="meta" data-page-node-id="0ziqfWXM0uk8gOLZkiuGSJ">生成时间：2026-09-24 11:0x　|　数据来源：实时运行环境 + 自动化验证脚本</div>
+  </header>
+
+  <div class="summary" data-page-node-id="1IbxMLui46fA51qxYhjdRR">
+    <div class="stat" data-page-node-id="sXtwN0CPnwE2htMVRKDUwt"><div class="n green" data-page-node-id="DKXMHN2z8gcKtnO4XYhAJh">3 / 3</div><div class="l" data-page-node-id="hdbP6BqpvsmX9nbSskC5KY">交付模块</div></div>
+    <div class="stat" data-page-node-id="T15DQmRSBUoCGYQ59zAb5j"><div class="n green" data-page-node-id="93L5Z3qE9uA7aDvRQ9RcCY">51 / 51</div><div class="l" data-page-node-id="SI2ARGDWdgTheZsrZRr5aO">自动化验证通过</div></div>
+    <div class="stat" data-page-node-id="N1H5JDbwVX5gD3jXeMaHlS"><div class="n" data-page-node-id="Tet90YsTRL7xjwb71UA5U4">5</div><div class="l" data-page-node-id="bHxSbhXbReKpeTHs1JeJrh">数据表实体</div></div>
+    <div class="stat" data-page-node-id="bsODdhwKNjknEIzcjj3P1q"><div class="n" data-page-node-id="UKuW2E4CEzz4h35oskeBgN">4</div><div class="l" data-page-node-id="mwhCFUTiO7DOypiyGYt5Bz">Redis 缓存域</div></div>
+  </div>
+
+  <!-- 模块一 -->
+  <div class="card" data-page-node-id="2tn59EHrihKyzQRht2qr0Y">
+    <h2 data-page-node-id="LjqW6eDV3AaWuUOnaWAbut">① 航班延误 Dashboard 可视化修复 <span class="badge b-done" data-page-node-id="PxqlhpJilXHtClsuiX9o2g">已完成</span></h2>
+    <div class="desc" data-page-node-id="jUzVjCv34TppmxC6S7oGQB">针对用户反馈的三处问题修复，已通过无头 Edge + CDP 端到端冒烟验证。</div>
+    <table data-page-node-id="GntA0MvDAAw2qhTb0vqFaa">
+      <tr data-page-node-id="4V3H5PyuT9fegagkURt1Se"><th style="width:46%" data-page-node-id="9wOxaKAVAToCs7XiLzqzY3">任务项</th><th data-page-node-id="93tsDRdfEDqJwglqlHTYOx">状态</th><th data-page-node-id="Web5RgIbOZlmNa81W8UqrB">说明</th></tr>
+      <tr data-page-node-id="5WIE8hk7WGJDe7IR8Yx3b9"><td data-page-node-id="A77O8dnADtZ3MEATFDxJR0">指标范围错误修正</td><td class="ok" data-page-node-id="q11En5Ftk5tQb0mZlIsvCX">✅ 完成</td><td data-page-node-id="NHeBlBe3JdaKkEHBZrDBLg">getNumericBounds 改为按 carrier/year-month/airport 三维聚合后取 MAX；范围 arr_flights 0~12,096,540</td></tr>
+      <tr data-page-node-id="OrAVLEh31GAxD70LGesDC5"><td data-page-node-id="mj79cWkEkVWHkcVoeyHF2R">图表默认滑动窗口</td><td class="ok" data-page-node-id="pJwlDChp5zkSrSl7v0pRaf">✅ 完成</td><td data-page-node-id="zflqUCmNAj5mskEfJRPhYT">≤12 月窗口 + prev/next 导航 + "展示全部"；≤12 月自动全展示避免过密</td></tr>
+      <tr data-page-node-id="qQDmHK3eqfpuKW7rlmtPbS"><td data-page-node-id="8Ve9GhGFj65bk0VaR30E9z">气泡图力导向重排</td><td class="ok" data-page-node-id="2QufE7vpExz9KwGD7iWscI">✅ 完成</td><td data-page-node-id="p7ELbG77gmug7JBqt5tu1K">从 d3.pack(2785 圆挤一团) 重写为力导向布局，根级 23 航司气泡 + 下钻机场</td></tr>
+    </table>
+    <div class="links" data-page-node-id="8AHi1raTtmvt9O80gj02wd">
+      <a href="http://localhost:3000/dashboard" target="_blank" data-page-node-id="hR9gOg0hy2ajxVNQwc6q4A">▶ 打开 Dashboard 演示</a>
+    </div>
+  </div>
+
+  <!-- 模块二 -->
+  <div class="card" data-page-node-id="olS7tGmiEk3nrT0juAED6E">
+    <h2 data-page-node-id="SApb3zdSc52ZiQe9zbXD1b">② AI Agent 基础交互框架 <span class="badge b-done" data-page-node-id="nPAR4kYfXxbMmnGzgGPD9D">已完成</span></h2>
+    <div class="desc" data-page-node-id="LpwLnAPhsXxPK3waDZCpJi">前端悬浮聊天 + 多渲染器 + 后端多模型适配器 + 会话持久化，多轮真实对话（Qwen）跑通。</div>
+    <table data-page-node-id="1ko8zBFxwwtzbf91p9HJ2E">
+      <tr data-page-node-id="ZfHFnZQ6QG9e0pfDuYnhBk"><th style="width:46%" data-page-node-id="DECSd6gWRczHvWrrVRIsEd">任务项</th><th data-page-node-id="t9D5gs0ZN7CuRbkwk3DnUV">状态</th><th data-page-node-id="Dh7h8w1G1BffWqzYvRC04q">说明</th></tr>
+      <tr data-page-node-id="suOdVoogOMMI7RMu8OqfCb"><td data-page-node-id="lAi0by7fNogxPnUO3ko7Bp">全局悬浮聊天入口</td><td class="ok" data-page-node-id="p4CeRHcDEMG0AInbclCVB0">✅ 完成</td><td data-page-node-id="O9QQ6E5RigA8OT5pDFTzUB">右下角 ChatLauncher 挂载于 MainLayout，全局可用</td></tr>
+      <tr data-page-node-id="uReqUGZgyZdxjEFQTn2SMG"><td data-page-node-id="h0kn7eGIcFoYrFBAbxIBgx">5 种消息渲染器</td><td class="ok" data-page-node-id="PJj8G8vrC5qjdRk9lDRCOo">✅ 完成</td><td data-page-node-id="LR8HGeCuJvkjyrNl3LCFZk">文本 / 表格 / 图表 / 报表 / 确认，结构化解耦</td></tr>
+      <tr data-page-node-id="98ZhHbWasgjuF9nPh0vmgk"><td data-page-node-id="igerFyKfGddUzqk1tXz3Bb">Markdown + 文件上传</td><td class="ok" data-page-node-id="dxl5zdaCNMhepIgLupj7qF">✅ 完成</td><td data-page-node-id="sw053AMtoP2qv2aVTECoWx">Markdown 渲染、文件上传、Enter 发送 / Shift+Enter 换行</td></tr>
+      <tr data-page-node-id="GGLKSMlGCkDHT6WsleS5Y8"><td data-page-node-id="11PPjIAtfAMVxnYe53VbB4">导航 Agent 任务页</td><td class="ok" data-page-node-id="Ejxmp0XJ3SmgCJ1okSEFXR">✅ 完成</td><td data-page-node-id="MVrGdMA6PxVNoFs6Y3GO3m">/agent-tasks 页接入</td></tr>
+      <tr data-page-node-id="4vnGyaySUqgKDZpWkWIweQ"><td data-page-node-id="p59yFOmgB0nqCAxN3JRpxp">刷新历史不丢</td><td class="ok" data-page-node-id="RjoL6clq4vf1dY2H5C37cm">✅ 完成</td><td data-page-node-id="h8OsBzTG42TEjGXf927rjL">会话持久化，刷新后恢复历史</td></tr>
+      <tr data-page-node-id="IoIqpfQJBTHEIMbu6B3SwW"><td data-page-node-id="g6MP1d0NCDSF8vPY5d6Bvg">多模型统一适配器</td><td class="ok" data-page-node-id="P0ULkOUegUFEUxdefDBGJu">✅ 完成</td><td data-page-node-id="gYcZfUANgsSEndWqX096P7">DeepSeek / Qwen / GPT / Kimi / 本地，统一 OpenAI 协议；resolveTarget 防模型泄漏</td></tr>
+      <tr data-page-node-id="8lna8u5brbv7qOyGKNKk4v"><td data-page-node-id="PdpjtJUM4dA9K7ALtRpAHt">会话数据库表 + 实体</td><td class="ok" data-page-node-id="7EHXEmJFymnaOnjRCAJOsa">✅ 完成</td><td data-page-node-id="8AxEfEV5dGkiWd6YI0AS9x">ai_chat_sessions + ai_chat_message</td></tr>
+    </table>
+    <div class="links" data-page-node-id="4rYziwf7iCj2fZF0UutDI8">
+      <a href="http://localhost:3000/login" target="_blank" data-page-node-id="aMtVJi6CoTwI67lSGprDdq">▶ 登录后体验悬浮聊天</a>
+      <a href="http://localhost:3000/agent-tasks" target="_blank" data-page-node-id="hWxFreZ4sLTHcZILcpH9bv">▶ Agent 任务页</a>
+    </div>
+  </div>
+
+  <!-- 模块三 -->
+  <div class="card" data-page-node-id="bPVFCBD4rQucMvrvEIwW1p">
+    <h2 data-page-node-id="6JwuOm3RwV8jRw7FXW9nlM">③ AI Agent 数据表 + Redis 缓存 <span class="badge b-done" data-page-node-id="TieIZL6vSOFWvN4pj4eVaS">已完成 · 自动化验证 51/51</span></h2>
+    <div class="desc" data-page-node-id="J4tpgIkY1cFDLfDmNFqTi0">4 张主表 + 1 张消息从表（TypeORM 实体）、6 个受 JWT 保护的 Controller、4 类 Redis 缓存、PG 兜底。</div>
+    <table data-page-node-id="2z6QQKqjfZonO5bNWHGnVj">
+      <tr data-page-node-id="fNzv4iADwb1MjIU4rbwzfD"><th style="width:40%" data-page-node-id="dktItm5ETs565aRj0evBFr">任务项</th><th data-page-node-id="9OjWcfPbjX8uCHDYRJf2OB">状态</th><th data-page-node-id="r2qxr0SCi3Uesbor4ZjaQG">说明</th></tr>
+      <tr data-page-node-id="fhdbbiOwCuKXG0gHkgNett"><td data-page-node-id="pX59SAfHaD6zpnga0cq747">数据表实体（5 个）</td><td class="ok" data-page-node-id="RHBG7DkJIEglIC9g1HcHiX">✅ 完成</td><td data-page-node-id="K5VELUDvMW9KzZllTSPugC">ai_chat_session / ai_chat_message / ai_user_memory / ai_task_record / ai_operation_audit；物理隔离 + 逻辑外键 user_id/tenant_id；业务表零改动</td></tr>
+      <tr data-page-node-id="pXegVDYDGFM2vLDyTcbU7x"><td data-page-node-id="0iNGTORjEW44wcA402v6BK">CRUD + DTO + 分页</td><td class="ok" data-page-node-id="JG4LATwXV9giNvp87BtMLy">✅ 完成</td><td data-page-node-id="2ElHmEFdYPpYfjC4t9RPvA">class-validator 校验；分页信封 {items,total,...}</td></tr>
+      <tr data-page-node-id="eqUywnMrBITvRrCv8i9P84"><td data-page-node-id="EWOWkE6xFWBnmxFIFF8SE0">JWT 权限隔离</td><td class="ok" data-page-node-id="HCEo2gJQCBGYULBlGDSuhJ">✅ 完成</td><td data-page-node-id="G2PFGaE6sFT8uywfeNciAc">无 token→401；跨用户→404（非 403）；admin <code data-page-node-id="AE6JZg2DuvXOwzOdSf4dGY">?scope=all</code> 仅管理员生效（AI_ADMIN_EMAILS）</td></tr>
+      <tr data-page-node-id="WxmOPHNOE0K8VHaDmxoCLd"><td data-page-node-id="FMaUbWLKcWmC1DyBsJ42PE">缓存 ai:session:</td><td class="ok" data-page-node-id="SeIPdBOP3tFl4IUCuUeB2c">✅ 完成</td><td data-page-node-id="WP6LDBqrt5MioSfQIaAkol">会话短期记忆 10 轮 / 2h / TTL 7200s</td></tr>
+      <tr data-page-node-id="BF5CrWmb59PScrdKqtB91R"><td data-page-node-id="aEDLgnfSuikFElNl6Xs4af">缓存 ai:chat_cache:</td><td class="ok" data-page-node-id="vszl5rGDuFEivxK3pUeYKz">✅ 完成</td><td data-page-node-id="wLHeyRE2VCVOVya1NEwfwz">聊天结果缓存 10min / TTL 600s；相同问题命中缓存</td></tr>
+      <tr data-page-node-id="8kdUWyuTLBhULLiaGRwiH6"><td data-page-node-id="TKnEm0NWl91RE951UhCjfV">缓存 ai:llm_cache:</td><td class="ok" data-page-node-id="YnlYFBc34O1Iml35mN4Gh0">✅ 完成</td><td data-page-node-id="vvKya681mN0iU2i0P3THSj">模型结果缓存占位（统一出口）</td></tr>
+      <tr data-page-node-id="5pePCzZKse6GgodG0bKxI0"><td data-page-node-id="9Wx7tw5nXeGHexll2NP1xk">缓存 ai:task_state:</td><td class="ok" data-page-node-id="QmQjov6xqhkF4DEpmzsIWY">✅ 完成</td><td data-page-node-id="FCThLhw1JiXgLJ8a2swWNR">任务状态，兼容 LangGraph Checkpointer 接口</td></tr>
+      <tr data-page-node-id="27U7iMYpm2xQ8MdKxt6mwP"><td data-page-node-id="hCFLpQhOSVD5dISMEPeck0">PG 兜底</td><td class="ok" data-page-node-id="Hg0Py1rE0C3bB0lYLYc5tv">✅ 完成</td><td data-page-node-id="JlpogQNhpgyA19IjDOv1Jn">删除缓存 key 后从 Postgres 重建上下文，模型正确复述历史（6 轮）</td></tr>
+    </table>
+
+    <div class="verify" data-page-node-id="Ut7ubBO8RDcvTj5v9QLBfA">
+      <b data-page-node-id="lsP4XjGDn5pAVAbiAnUiwo">🧪 实时自动化验证结果（2026-09-24 运行）</b><br data-page-node-id="Pb43qtIXV2U8XUsa9QSDvD"/>
+      • <code data-page-node-id="G37meKbj2DnFLquZy1G9Z7">verify-ai-agent.mjs</code> —— <b data-page-node-id="FXEZavpzMhaIzjPqegpWWc">31 / 31 通过</b>（会话分页/隔离、记忆 CRUD、任务+Redis、审计权限、校验、清理）<br data-page-node-id="DVTeg3GZd1smFcnRM6qbmX"/>
+      • <code data-page-node-id="Ki36Fs3Pm3gq7G7LOYiw9O">verify-ai-cache.mjs</code> —— <b data-page-node-id="x2ip6JYA8eIlGEFPRcQZn0">20 / 20 通过</b>（首次走模型、缓存命中、短期记忆、缓存失效、PG 兜底重建、命名空间纪律）<br data-page-node-id="E85CSMXvxQwSIGDHLPAAjy"/>
+      • 合计：<b data-page-node-id="fzCy63b4mXR5mymYDQiLXx">51 / 51 通过，0 失败</b>
+    </div>
+    <div class="links" data-page-node-id="LsLlwAzRtAMoUlaqgswNnM">
+      <a href="http://localhost:3001/api" target="_blank" data-page-node-id="SoOAIbSPnoSqhX5SLvcEB1">▶ Swagger API 文档</a>
+      <a href="http://localhost:3000/login" target="_blank" data-page-node-id="LhIc0eP6Ck9zjGnnIsC4Vy">▶ 登录体验缓存/记忆</a>
+    </div>
+  </div>
+
+  <!-- 如何演示 -->
+  <div class="card" data-page-node-id="1belGBc6Hso0qWgqRveOEA">
+    <h2 data-page-node-id="FDPk7CfGZCnRZ3gVpKoezE">🎯 如何向他人展示完成情况</h2>
+    <ol class="steps" data-page-node-id="LlK14eEQawVlCXzjq23Pib">
+      <li data-page-node-id="jZU6w0L7mnkyppxTEkt0fS"><b data-page-node-id="DtT5Au47BXauTlhZWjFi01">打开站点</b>：浏览器访问 <code data-page-node-id="YIFJVmGPhkrPoKIHTC9H40">http://localhost:3000</code>（前后端已在运行）。</li>
+      <li data-page-node-id="QGkhIhd1q5iwg2zsHXEEWy"><b data-page-node-id="abc8NHALcc3I5EBzzjXaXs">看 Dashboard</b>：进入航班延误看板，验证指标联动、12 月滑动窗口、气泡图航司下钻。</li>
+      <li data-page-node-id="wWon4Y5KrVCDq8kZgtKF4M"><b data-page-node-id="4YLWJXoW0Lzs9iHTZBRQoZ">体验悬浮聊天</b>：先到 <code data-page-node-id="aLYnagVfFKlKoY9yFIfxI4">/login</code> 登录，点右下角入口问"2018 年延误最严重的月份"→看模型回复；<b data-page-node-id="Z1IzfiQkCtLWDohA4ghgsD">再问一次相同问题</b>→明显更快（命中 <code data-page-node-id="ucnx8JZmZEYWW5Bz8O06iI">ai:chat_cache:</code>）；<b data-page-node-id="Y1XZAWhVvb7s9ZG4yDxMHD">继续追问</b>→短期记忆生效（<code data-page-node-id="HXpB2coDfei6QesCVGugHl">ai:session:</code>）。</li>
+      <li data-page-node-id="wAtHhdyuFpuhPtDBywsAen"><b data-page-node-id="Dw4xQF2jv0sYO4ki67R7D9">看任务页</b>：访问 <code data-page-node-id="FHaTjn7DIgFS8G97pfqiZq">/agent-tasks</code> 查看任务进度。</li>
+      <li data-page-node-id="8jRbFkHEYrFEA7db9ZFRFS"><b data-page-node-id="MVtqAN3LxKBp1OPnqZqQ6K">后端权限演示</b>：<code data-page-node-id="HGPbgO3CpOtm5HFZa7ltvt">curl --noproxy '*' http://localhost:3001/api/ai-agent/sessions</code> → 返回 <code data-page-node-id="ALBY0iI7EO2aSBnLtsGQ2u">401</code>（JWT 生效）。</li>
+      <li data-page-node-id="UJzdgp8TP2jW6CVYQe7Xa2"><b data-page-node-id="HYk6SfiuDY0j1ygKsLlNLA">一键复跑验证</b>：<code data-page-node-id="garrLhe99EdseQnRPIcD0r">node .cache/verify-ai-agent.mjs</code> 与 <code data-page-node-id="WD1i0tTHO9CVPmxIFNMZY9">node .cache/verify-ai-cache.mjs</code> → 输出 31/31、20/20。</li>
+    </ol>
+    <div class="links" data-page-node-id="rOn1cAgqKSoiTuurli6C82">
+      <a href="http://localhost:3000" target="_blank" data-page-node-id="p1EGPmqPnHHdl5uIf3dU0Z">站点首页</a>
+      <a href="http://localhost:3000/dashboard" target="_blank" data-page-node-id="knHvXz27dqjG5Hc70T9Mcb">Dashboard</a>
+      <a href="http://localhost:3000/login" target="_blank" data-page-node-id="dJkqEkydp0BEiiHjLThzuS">登录</a>
+      <a href="http://localhost:3000/agent-tasks" target="_blank" data-page-node-id="kZqCGcYFMlGnP8NVZfRO8Q">Agent 任务</a>
+      <a href="http://localhost:3001/api" target="_blank" data-page-node-id="5RCWzRi1Bb8m68mYqSVvZQ">API(Swagger)</a>
+    </div>
+  </div>
+
+  <!-- 诚实备注 -->
+  <div class="card" data-page-node-id="ZU70EFp0bbxdSz0gMFpGjI">
+    <h2 data-page-node-id="hbmXIEuD6BBc5UTHBlfOFH">📌 范围说明与未覆盖项</h2>
+    <table data-page-node-id="BBPYbZzHA9mPcueGnTWdOO">
+      <tr data-page-node-id="QEBvFkfDDw4pRD0Tos1poY"><th style="width:30%" data-page-node-id="8y2m0qxreiZxZEPNqZif4o">项</th><th data-page-node-id="ViAdHcXgB3D5A9zKZy5Vbu">状态</th><th data-page-node-id="Y1N9NnBSbtFGNh8hLS99mn">说明</th></tr>
+      <tr data-page-node-id="yeyJFgHc2tHnHga5TQVV0v"><td data-page-node-id="IojINAbqDnG3BAtq4vytIN">意图识别 / Agent 编排</td><td class="no" data-page-node-id="6T5ApJfpAGzyLP0ZDoSRSL">⚪ 未做</td><td data-page-node-id="4EBzoKLNck9gj3behUoBfe">@langchain/langgraph 已就绪，但意图识别与编排流程未接入</td></tr>
+      <tr data-page-node-id="IkWBn7DwvjqAIbTrN7bHCw"><td data-page-node-id="aEJOeM4rn2xM2xXrbPwrLX">管理员机制</td><td class="no" data-page-node-id="ZRhhQDZNyDq5IG1SLkNHSM">⚪ 变通</td><td data-page-node-id="4fXsL7Z75Cl8H4O7amwDBe">因 users 表不可改，用 <code data-page-node-id="M5YIlVEmcCyQz6YP0Mj2hu">AI_ADMIN_EMAILS</code> 环境变量实现</td></tr>
+      <tr data-page-node-id="W2M2fZGzrbgcUDJ94Nu0v6"><td data-page-node-id="aEzuwBLBwhfZSUoO5ULYWt">消息表拆分</td><td class="no" data-page-node-id="7qFU8cwCJINIUv06j6o1PF">⚪ 说明</td><td data-page-node-id="j7mbwuVCQs3DIbzKv3ghDu">消息为独立从表，共 5 实体（非严格 4 张主表）</td></tr>
+      <tr data-page-node-id="dA72mX51LDTnkaSEaGG7q2"><td data-page-node-id="Yp1pQfqKE5kaob4O6IuLi7">本地/离线模型</td><td class="ok" data-page-node-id="s481gMAU4jap4lFFDHKepc">✅ 可选</td><td data-page-node-id="PDsAt8WGYLACXHs0dBkzqU">依赖 <code data-page-node-id="V4fxAIyyRVFwe3NBMLbRR9">LOCAL_LLM_BASE_URL</code>（默认 http://localhost:1234/v1），默认走云端 Qwen</td></tr>
+    </table>
+    <div class="note" data-page-node-id="SHBJVOZtLO21vvFgdI6jzE">注：所有验证脚本固化于 <code data-page-node-id="ageMteFwRBFc7isqIN1tAG">.cache/</code>，可随时重跑复核完成度。</div>
+  </div>
+
+  <footer data-page-node-id="No4ZFz72QUL1DBtfWOY6cb">AI Agent 任务看板 · 由 WorkBuddy 生成 · 完成度依据实时运行环境与自动化验证脚本</footer>
+</div>
+</body>
+</html>

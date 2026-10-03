@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>AI Agent 核心能力 · 第二周交付报告</title>
+<style>
+  :root{
+    --bg:#f7f9fc; --card:#ffffff; --ink:#0f172a; --muted:#64748b;
+    --line:#e2e8f0; --blue:#1d4ed8; --green:#15803d; --amber:#b45309; --red:#b91c1c;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+    line-height:1.65;}
+  .wrap{max-width:1080px;margin:0 auto;padding:32px 24px 64px;}
+  h1{font-size:26px;margin:0 0 6px;}
+  .sub{color:var(--muted);font-size:14px;margin-bottom:26px;}
+  h2{font-size:18px;margin:32px 0 12px;padding-left:10px;border-left:4px solid var(--blue);}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px 20px;margin-bottom:14px;}
+  .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:8px;}
+  .kpi{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px;}
+  .kpi .n{font-size:26px;font-weight:700;line-height:1.2;}
+  .kpi .l{font-size:12px;color:var(--muted);}
+  table{width:100%;border-collapse:collapse;font-size:14px;}
+  th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:top;}
+  th{background:#f1f5f9;font-weight:600;font-size:13px;}
+  code{background:#f1f5f9;border-radius:4px;padding:1px 5px;font-size:12.5px;}
+  .ok{color:var(--green);font-weight:600;}
+  .warn{color:var(--amber);font-weight:600;}
+  .bad{color:var(--red);font-weight:600;}
+  .tag{display:inline-block;font-size:11.5px;padding:2px 8px;border-radius:999px;
+    background:#e0e7ff;color:#3730a3;margin-right:6px;}
+  .tag.g{background:#dcfce7;color:#166534;}
+  .tag.a{background:#fef3c7;color:#92400e;}
+  ol,ul{margin:8px 0 0 20px;padding:0;}
+  li{margin-bottom:6px;}
+  .note{background:#fffbeb;border:1px solid #fde68a;border-radius:10px;padding:14px 16px;font-size:14px;}
+  .foot{color:var(--muted);font-size:12.5px;margin-top:28px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>AI Agent 核心能力 · 第二周交付报告</h1>
+  <div class="sub">实现 AI Agent 调用项目现有封装 Service/API ｜ 工具调用层规范 + 5 个核心只读工具 + 前端渲染适配 ｜ 2026-09-28</div>
+
+  <div class="kpis">
+    <div class="kpi"><div class="n">93<span style="font-size:15px;color:var(--muted)">/93</span></div><div class="l">端到端断言全部通过</div></div>
+    <div class="kpi"><div class="n">5</div><div class="l">已注册只读工具</div></div>
+    <div class="kpi"><div class="n">4</div><div class="l">前端新增渲染组件</div></div>
+    <div class="kpi"><div class="n">0</div><div class="l">工具层手写 SQL</div></div>
+  </div>
+
+  <h2>一、本周验证结果（实测）</h2>
+  <div class="card">
+    <table>
+      <tr><th>验证套件</th><th>范围</th><th style="width:150px">结果</th></tr>
+      <tr><td><code>verify-ai-tools.mjs</code>（本周新增）</td><td>注册中心、意图匹配、权限、启停、5 工具执行、脱敏、审计、缓存联动</td><td class="ok">42 / 42 通过</td></tr>
+      <tr><td><code>verify-ai-agent.mjs</code>（上周回归）</td><td>数据表 CRUD、JWT 隔离、跨租户</td><td class="ok">31 / 31 通过</td></tr>
+      <tr><td><code>verify-ai-cache.mjs</code>（上周回归）</td><td>Redis 四类缓存、PG 兜底</td><td class="ok">20 / 20 通过</td></tr>
+    </table>
+    <p style="margin:10px 0 0;font-size:13.5px;color:var(--muted)">
+      实测指标卡输出：<b>航司 23 家 · 覆盖机场 378 个 · 抵达航班 61.56M · 取消航班 973.2K（取消率 1.58%）</b>
+    </p>
+  </div>
+
+  <h2>二、需求对照：工具调用层规范</h2>
+  <div class="card">
+    <table>
+      <tr><th style="width:210px">需求</th><th>实现</th></tr>
+      <tr><td>BaseTool 抽象类</td><td><code>tools/base-tool.ts</code>：抽象 <code>execute(params, ctx)</code> + <code>extractParams()</code> + <code>validate()</code></td></tr>
+      <tr><td>入参必须携带用户身份，禁止越权</td><td><code>ToolContext.user</code> 为必填；注册表执行前校验 <code>ctx.user.userId</code>，缺失直接 403<b>「禁止匿名调用」</b>——越权在结构上不可能发生</td></tr>
+      <tr><td>禁止注入 Repository / 手写 SQL</td><td>5 个工具<b>全部只注入业务 Service</b>（UsersService / FlightDelayService / DashboardService）；工具层 SQL 行数 = 0</td></tr>
+      <tr><td>ToolRegistryService</td><td>自动注册（DI 注入即注册）、按名查找、意图匹配、启用/禁用动态配置</td></tr>
+      <tr><td>执行前权限校验</td><td><code>permissionDenied()</code>：adminOnly 工具非管理员返回 403；用户查询工具非管理员自动脱敏</td></tr>
+      <tr><td>结果标准化封装</td><td><code>{code, data, message, resultType, toolName, pagination, meta, durationMs}</code>，resultType ∈ 文本/表格/图表/报表</td></tr>
+      <tr><td>异常统一封装</td><td>400 校验 / 403 越权 / 404 不存在 / 409 已停用 / 500 内部错误，message 可直接展示前端</td></tr>
+      <tr><td>分页排序透传</td><td>工具参数 → 现有 QueryFlightDelayDto → Service，与 Flight info 页完全一致</td></tr>
+      <tr><td>装饰器自动审计</td><td><code>@AuditedTool()</code> 方法装饰器 + <code>ToolAuditSink</code> 桥接 DI，写入 <code>ai_operation_audit</code>：用户ID、工具名、入参、结果、IP、UA、耗时</td></tr>
+      <tr><td>敏感字段自动脱敏</td><td><code>maskSensitive()</code>：password/token 全掩码，email/phone 部分掩码；审计入库前统一执行</td></tr>
+    </table>
+  </div>
+
+  <h2>三、需求对照：五个核心只读工具</h2>
+  <div class="card">
+    <table>
+      <tr><th>工具</th><th>意图</th><th>注入 Service</th><th>返回</th></tr>
+      <tr><td><code>user.query</code></td><td><span class="tag">QUERY_DATA</span></td><td>UsersService</td><td>表格：姓名 / 邮箱 / 职位 / 角色 / 状态（非管理员邮箱脱敏）</td></tr>
+      <tr><td><code>flight.query</code></td><td><span class="tag">QUERY_DATA</span></td><td>FlightDelayService</td><td>表格：21 个业务字段全对齐 + 分页（关键词→航司/机场代码，复用 getFilterOptions）</td></tr>
+      <tr><td><code>dashboard.overview</code></td><td><span class="tag g">STATISTICS_ANALYSIS</span></td><td>DashboardService</td><td>指标卡×4：航司总数 / 覆盖机场数 / 航班抵达总数 / 取消航班总数（含取消率占比）</td></tr>
+      <tr><td><code>dashboard.bar</code></td><td><span class="tag g">STATISTICS_ANALYSIS</span></td><td>DashboardService</td><td>条形图：x=日期/航司/机场，y=5 项指标，含全部筛选器 + topN</td></tr>
+      <tr><td><code>dashboard.bubble</code></td><td><span class="tag g">STATISTICS_ANALYSIS</span></td><td>DashboardService</td><td>气泡图：航司(L1)→机场(L2) 嵌套节点，支持下钻/返回</td></tr>
+    </table>
+  </div>
+
+  <h2>四、前端配套</h2>
+  <div class="card">
+    <ul>
+      <li><b>按 resultType 自动匹配渲染器</b>：<code>MessageRenderer</code> 依据 <code>resultType</code> + <code>data.chartType</code> 分派到指标卡 / 条形图 / 气泡图 / 表格，新增工具无需改前端分派逻辑。</li>
+      <li><b>指标卡组合组件</b> <code>MetricCardMessage</code>：4 卡布局，复用 Dashboard 卡片样式，大数字走 K/M/B，副行显示「取消率 1.58%」这类量+百分比。</li>
+      <li><b>条形图</b> <code>BarChartMessage</code>：hover 显示「数值 · 占比百分比」，顶部 chip 回显维度/指标/分组数，超过 24 项提示截断。</li>
+      <li><b>气泡图</b> <code>BubbleChartMessage</code>：点击下钻机场层级、返回上一层（zoom in/out），hover tooltip 展示 5 项指标明细。</li>
+      <li><b>统一错误提示</b> <code>ToolErrorMessage</code>：按 code 切换 severity（403 警告、404/409 提示、500 错误），展示工具名与错误码。</li>
+    </ul>
+  </div>
+
+  <h2>五、与上周「校验 + 缓存」的联动</h2>
+  <div class="card">
+    <ul>
+      <li><b>缓存联动</b>：<code>ai:chat_cache:</code> 现在连同 payload 一起缓存——同一问题二次命中缓存时，图表/指标卡照样能还原（已验证：缓存命中 <code>resultType=chart</code> 仍存在）。</li>
+      <li><b>审计联动</b>：工具执行复用上周的 <code>ai_operation_audit</code> 表与 <code>scope=all</code> 管理员视图，新增 action <code>tool.execute</code>，管理员可直接查跨用户工具调用记录。</li>
+      <li><b>校验联动</b>：工具入参走现有 class-validator DTO 链路，非法参数返回 400 且 message 可直接展示。</li>
+      <li><b>会话记忆联动</b>：工具回答同样写入会话历史，刷新页面图表不丢。</li>
+    </ul>
+  </div>
+
+  <h2>六、三处需求偏差（已按合理假设处理，请确认）</h2>
+  <div class="note">
+    <ol>
+      <li><b>项目里没有 DashboardService</b>：原需求要求「注入现有 DashboardService」。我新建了 <code>dashboard.service.ts</code> 作为门面，但它<b>委托</b>给 <code>FlightDelayService</code>（新增 <code>overview()</code> 复用同一个私有 <code>buildWhere</code>），因此 KPI 与图表口径天然一致，没有复制 SQL。</li>
+      <li><b>users 表原本没有姓名/title/role/status 列</b>：只有 id/email/password_hash/时间戳。我写了迁移脚本补齐这 4 列并回填（25 行，管理员角色来自 <code>AI_ADMIN_EMAILS</code>），工具返回字段因此与表完全对齐。</li>
+      <li><b>K/M/B 换算规则原本不存在</b>（前端只有 toLocaleString）。我在后端 <code>number-format.ts</code> 定义了唯一规则，前端 <code>lib/format.ts</code> 同源镜像，避免 Dashboard 卡片与 AI 卡片口径漂移。</li>
+    </ol>
+  </div>
+
+  <h2>七、怎么演示</h2>
+  <div class="card">
+    <ol>
+      <li>打开 <code>http://localhost:3000</code> 登录（demo@flightagent.com / demo1234），点右下角悬浮入口。</li>
+      <li>依次提问，观察自动匹配不同渲染器：<br>
+        <code>给我看看核心指标概览</code> → 指标卡<br>
+        <code>按航司统计取消航班的条形图</code> → 条形图（hover 看占比）<br>
+        <code>航司层级气泡图</code> → 气泡图（点击下钻）<br>
+        <code>2018年航班明细</code> → 表格<br>
+        <code>查一下有哪些用户</code> → 表格（邮箱脱敏）</li>
+      <li>再问一次同样问题 → 秒回（命中 <code>ai:chat_cache:</code> 且图表仍在）。</li>
+      <li>管理员（邮箱见本地 <code>bknd/.env</code>，口令为部署时设置的强口令）查审计：<br>
+        <code>curl --noproxy '*' -H "Authorization: Bearer &lt;token&gt;" "http://localhost:3001/api/ai-agent/audits?scope=all"</code> → 可见 <code>tool.execute</code> 记录。</li>
+      <li>一键复核：<code>node .cache/verify-ai-tools.mjs</code>（42 项）。</li>
+    </ol>
+  </div>
+
+  <div class="foot">
+    后端 <code>nest build</code> 通过；前端 <code>tsc --noEmit</code> 通过、dev 编译各页面 200。<br>
+    注：ftnd <code>npm run build</code> 因沙箱批量删除保护（Turbopack 清理 .next 超 50 文件）被拦，属环境限制，非代码问题。
+  </div>
+
+</div>
+</body>
+</html>

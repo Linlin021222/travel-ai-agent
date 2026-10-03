@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-page-node-id="OcxORGqz2tBbRkSAudQqMV">
+<head data-page-node-id="YMJFWJNwWyiFKq0XRFSTNj">
+<meta charset="utf-8" data-page-node-id="5iZzeHd7caQVxzevcWHccV">
+<meta name="viewport" content="width=device-width, initial-scale=1" data-page-node-id="RCFWMA62O38Rl7src6dgLW">
+<title>AI Agent 工具路由优化报告</title>
+<style>
+  :root{
+    --bg:#f7f7f5; --card:#ffffff; --line:#e3e2dd; --ink:#2c2c2a;
+    --muted:#5f5e5a; --green:#3b6d11; --green-bg:#eaf3de;
+    --red:#a32d2d; --red-bg:#fcebeb; --amber:#854f0b; --amber-bg:#faeeda;
+    --blue:#185fa5; --blue-bg:#e6f1fb;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;padding:32px 20px;background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+    line-height:1.7;font-size:14px}
+  .wrap{max-width:1040px;margin:0 auto}
+  h1{font-size:22px;font-weight:500;margin:0 0 6px}
+  h2{font-size:16px;font-weight:500;margin:32px 0 12px;padding-bottom:8px;border-bottom:1px solid var(--line)}
+  .sub{color:var(--muted);font-size:13px;margin-bottom:24px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px 20px;margin-bottom:14px}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th,td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}
+  th{background:#faf9f6;font-weight:500;color:var(--muted)}
+  td.num{white-space:nowrap;font-variant-numeric:tabular-nums}
+  .up{color:var(--green);font-weight:500}
+  .down{color:var(--red);font-weight:500}
+  .flat{color:var(--muted)}
+  .pill{display:inline-block;padding:2px 9px;border-radius:999px;font-size:12px}
+  .p-good{background:var(--green-bg);color:var(--green)}
+  .p-bad{background:var(--red-bg);color:var(--red)}
+  .p-warn{background:var(--amber-bg);color:var(--amber)}
+  .p-info{background:var(--blue-bg);color:var(--blue)}
+  ul{margin:8px 0 0 18px;padding:0}
+  li{margin-bottom:6px}
+  code{background:#f1efe8;padding:1px 6px;border-radius:4px;font-size:12.5px;
+    font-family:ui-monospace,Menlo,Consolas,monospace}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px}
+  .kpi{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px}
+  .kpi .label{color:var(--muted);font-size:12px}
+  .kpi .value{font-size:24px;font-weight:500;margin-top:4px}
+  .note{font-size:12.5px;color:var(--muted);margin-top:10px}
+  .foot{margin-top:30px;padding-top:14px;border-top:1px solid var(--line);color:var(--muted);font-size:12.5px}
+</style>
+</head>
+<body data-page-node-id="gTS8jRqPHblTo8ax2SnJdS">
+<div class="wrap" data-page-node-id="IAKb8mrkGAU2udZ9MTXbls">
+
+<h1 data-page-node-id="76eG3x6vZIS884AZx3Ghwf">AI Agent 工具路由优化报告</h1>
+<div class="sub" data-page-node-id="e2Zn0FXv7Oeox14GXDLiCv">Flight Agent · 第二周续 · 实测数据均来自本地运行的真实服务（Postgres + Redis + Qwen qwen-plus）</div>
+
+<div class="grid" data-page-node-id="ThMGL4OfolBqI0S0VxE3FV">
+  <div class="kpi" data-page-node-id="SrvZta6JKySKt5zJ9Zoi91"><div class="label" data-page-node-id="EBtb2E6Z6utA9W2qfHR0Yl">路由准确率</div><div class="value" data-page-node-id="R1lGtKyppBNZxGMK5WH6Y3"><span class="up" data-page-node-id="WW6x17yJEny7R2782lzLoC">42.9% → 100%</span></div><div class="note" data-page-node-id="UT0YdU6Q8035zEViFG3gnb">14 个测试问题，端到端 chat</div></div>
+  <div class="kpi" data-page-node-id="9ztPIsPDlVSTtZWT965MaO"><div class="label" data-page-node-id="90z37pfocAY9CZBCU2R79s">越界请求拒绝率</div><div class="value" data-page-node-id="0xThTeA2kU1FRIsXrAK2Yb"><span class="up" data-page-node-id="9SjfBQ1FM1AdZAaRK7n4hj">0% → 100%</span></div><div class="note" data-page-node-id="uE2ofioLuTPj09BqDHnD1b">3 个越界/写操作探测</div></div>
+  <div class="kpi" data-page-node-id="BCxGBIc3Dhck6fmKYUT5ny"><div class="label" data-page-node-id="Az63YLy9C8Kffb8LZpaUGi">明确问法耗时</div><div class="value" data-page-node-id="twkQFyKe9BL0j14UWH3EUW"><span class="flat" data-page-node-id="G31yra1hcpddFxfukFgZei">持平 · 0 token</span></div><div class="note" data-page-node-id="p7bYgD67gwW3zwbhNWtvcF">29–176 ms，走强关键词快捷路径</div></div>
+  <div class="kpi" data-page-node-id="bRWqmeHPjmbFEAFwGSs2cy"><div class="label" data-page-node-id="GiGbrAvAaQHI604hoajASM">回归</div><div class="value" data-page-node-id="jtfmuiZh17PRand4Cpl9e3"><span class="up" data-page-node-id="BFKNBfpP8PIcdzbhrrNTHP">93 / 93</span></div><div class="note" data-page-node-id="dRmebZDjq13tXZ706S1KRe">工具 42 + 数据层 31 + 缓存 20</div></div>
+</div>
+
+<h2 data-page-node-id="2XY5TNTEPHGVV7WTzT1b5K">一、做了什么</h2>
+<div class="card" data-page-node-id="riQSCxpTpceSa1MA53Opbb">
+<table data-page-node-id="0Rk0Bfar2AFb8dcVOLihaG">
+  <tr data-page-node-id="S80WvllKANAmT73YPHXqTb"><th style="width:150px" data-page-node-id="i05TULvyDsUtstvGkogbdu">优化项</th><th data-page-node-id="6svLUYUDFwbMYyUuTXtk9h">实现方式</th></tr>
+  <tr data-page-node-id="jCHo8NNk19VIywF9an1FRK">
+    <td data-page-node-id="CrVe0t8lwch1DsNirh1P1Z"><b data-page-node-id="CxQ6TKrkXNSNnUv37u58bT">1. 工具参数 Schema</b></td>
+    <td data-page-node-id="vBvuKaDBXImDEBAVgfHh43">新增 <code data-page-node-id="4ZCM5BXlSAFSdfkr5LNTXp">tools/tool-schema.ts</code>（共享片段 <code data-page-node-id="lE2LNONzUBLl8GwguuZVms">flightFilters()</code> / <code data-page-node-id="Y8ZXTGCI0NNUUittmFOvQy">schema()</code>），5 个工具的 <code data-page-node-id="kC33ni9uXlIAAeD1LsfJBz">ToolDefinition</code> 补上 <code data-page-node-id="omcDzvjsCPHCA8huAX90jh">parameters</code>（OpenAI function-calling 形状）。关键词与 Schema 同源，两者不会漂移。</td>
+  </tr>
+  <tr data-page-node-id="Ni2x1BXC7tNqlCXFfr5RmY">
+    <td data-page-node-id="Bv4aVySA9LgBWV6hBjkuD6"><b data-page-node-id="E1vtQhJkvPBLTaYJ1OHEBj">2. 适配器支持 Function Calling</b></td>
+    <td data-page-node-id="ppJXmAVE4QPa8EQvRFY4LA"><code data-page-node-id="Lt1987A3J7wbLHesH4halp">LlmCompletionRequest</code> 增加 <code data-page-node-id="buwupfMNXUlMk2AEC4U9mf">tools</code> / <code data-page-node-id="OdmkQI6qS4EznHwmKKq5wV">toolChoice</code>；响应解析 <code data-page-node-id="dmMKFt2Bit63dvQQzVdkFF">tool_calls</code>。<b data-page-node-id="VbqNBqVOY2DAvxPIKL7m54">兼容兜底</b>：服务端拒绝 <code data-page-node-id="ztyexoAIaw6OerItPcE3Y1">tools</code> 字段（400/404/422 且错误信息含 tool/function）时自动重试不带 tools，并标记 <code data-page-node-id="Y946DDf6551PLof3RJfcg2">toolsUnsupported</code> 交给关键词路由。</td>
+  </tr>
+  <tr data-page-node-id="qC99hrWi8JQHCtZ52LVDTJ">
+    <td data-page-node-id="fzL2nIdT9PvTbTFSRHADlD"><b data-page-node-id="VyvcXXMUTntycIL15k5Y4F">3. 分层提示词</b></td>
+    <td data-page-node-id="lx1ah7krtyaub5XXYrF5iK">原 4 行 <code data-page-node-id="2oOyLlFxtYcATaGz40yzgm">SYSTEM_PROMPT</code> 拆为五层：身份 / <b data-page-node-id="xGefaB9L9yX3dOOjk7kiw0">数据边界</b>（2009-01–2018-12 美国航班）/ 工具使用规范 / 输出格式 / <b data-page-node-id="zBgEF8HGEEDmztiL1rSlN7">安全边界</b>（禁止编造数字、禁止声称执行写操作、不确定就反问）。</td>
+  </tr>
+  <tr data-page-node-id="SVfvoFofCHnKI6Il2FR2nS">
+    <td data-page-node-id="P4tvMXHxqLirxua5sRCEVG"><b data-page-node-id="sVZAGGlfB8XWiQ3A1GfHRr">4. 混合路由（核心）</b></td>
+    <td data-page-node-id="Z8bE2c505nlb71eQu057oH"><code data-page-node-id="pNvdgKXVaxkqMS0hCc7rh5">AI_TOOL_ROUTING=auto</code>：<b data-page-node-id="sXhHfGF3S9CsHIvq7H2D1C">强关键词快捷</b>（仅按 strongKeywords，命中即执行）→ 含多步信号则跳过 → <b data-page-node-id="0tHVXzYt4rfFMUNAggeYm5">模型 function calling</b>（最多 3 轮 × 4 工具，结果回喂）→ 关键词兜底 → 纯聊天。<br data-page-node-id="XBQ4VWO9ZCgxsVLPAgoQ9y"><b data-page-node-id="hwjXmOj61fPU3kaxemQhcI">关键规则</b>：模型可达且决定不调工具时，该判断优先，关键词不得覆盖。</td>
+  </tr>
+  <tr data-page-node-id="25W8JwklgVItTenGpOC2K2">
+    <td data-page-node-id="1QONt29OQDpavxc1pa0zka"><b data-page-node-id="N0DZfWLcXO2zExuV8x8rYD">5. 多步编排</b></td>
+    <td data-page-node-id="nBY0vkGv0cg2WtAjC9aEUZ">模型 ↔ 工具循环最多 3 轮；轮次耗尽后强制一次纯文本总结兜底，且始终保留首个成功工具的 payload，真实数据绝不丢弃。</td>
+  </tr>
+</table>
+</div>
+
+<h2 data-page-node-id="ZmTJo2lVVHmn5YdKwzmg1r">二、实测对比</h2>
+<div class="card" data-page-node-id="6LaXy49DS1wwTbjUetCS0V">
+<table data-page-node-id="ZnXtKO8KCXceDDFbTCMddY">
+  <tr data-page-node-id="2AZGOb41OwWjF7uOErZkBq"><th style="width:120px" data-page-node-id="hYFDSAW7lxwFSWep6cZKjr">维度</th><th data-page-node-id="CXGZ9fFoRKgDOPHDmTQuah">指标</th><th class="num" data-page-node-id="ESr53zgzFOvJKVpGyFNpMs">优化前</th><th class="num" data-page-node-id="SGt1eOS7LTHaICZZjHiUHs">优化后</th><th data-page-node-id="6DkusPRPNodhnyK23tAcbH">说明</th></tr>
+  <tr data-page-node-id="X1DOkTXbkAGvkC2l2BIo65">
+    <td rowspan="4" data-page-node-id="dFnCq6BFSWVEkgcZlD3C7k"><b data-page-node-id="ggqWMtILxQDppFS8P8KbFf">准确率</b></td>
+    <td data-page-node-id="sycP8HO6YPEQicSpt9Lb5x">总体（14 例）</td><td class="num" data-page-node-id="cWbRkwzTE1DfoRwEm5KfyY">42.9%</td><td class="num up" data-page-node-id="zDXhNoMNTZVSZyqwJkxK0V">100%</td><td data-page-node-id="B5EeiRpfLfjH1agDd4sx2R">+57.1 个百分点</td>
+  </tr>
+  <tr data-page-node-id="bWP50ZZOdafpBIsvotsbEE"><td data-page-node-id="q4a5LSAFavi3xVRc02juYc">明确问法（5 例）</td><td class="num" data-page-node-id="GfqKEyAuCEbWRKZAAZFJ7L">100%</td><td class="num flat" data-page-node-id="H6xy8LlPhXfx2m8kIh67AV">100%</td><td data-page-node-id="0FIYIdWfyP1BSoIOzhqpkN">持平，靠强关键词快捷保持</td></tr>
+  <tr data-page-node-id="TzrGU4u06qLlNABkfESEED"><td data-page-node-id="0PfEQJTIWeAVRv5ckgAWPX">隐式/语义问法（7 例）</td><td class="num" data-page-node-id="JIJOdXyszlqg5HIFF5UmmO">14.3%</td><td class="num up" data-page-node-id="wOUX4pcc15ia9xxgqN3QW8">100%</td><td data-page-node-id="s8Tw62fGqNE6bnHFhI7fXj">最大收益：如"哪家航司取消最多"原被判给航班明细表</td></tr>
+  <tr data-page-node-id="l0Htsb49lVEq2xbWABDLMC"><td data-page-node-id="Vm2mspLXE4ZEDDShYoDZzg">应拒绝（2 例）</td><td class="num" data-page-node-id="eaqeHsVlUT1HNcpzSWpuZx">0%</td><td class="num up" data-page-node-id="z7My211oevs4pxVeQocbyX">100%</td><td data-page-node-id="8d20pTtG5uEP0fiOTEQ7Lv">原两条全部误触发工具</td></tr>
+
+  <tr data-page-node-id="ygs9dIy0Pcd3WBSiduo4l9">
+    <td rowspan="2" data-page-node-id="0LeW54rZbbJxCkBlPGGz2w"><b data-page-node-id="9AThpsK7OkKXRNtC2qeKEE">安全性</b></td>
+    <td data-page-node-id="iGVixIrCfYbpCeIEtSKAkj">越界/写操作拒绝率（3 例）</td><td class="num" data-page-node-id="DArIPzNR5HmSx05QfGDGdc">0%</td><td class="num up" data-page-node-id="L32Hk1PBgEse91ggLSNzEW">100%</td><td data-page-node-id="glnLjvQQ9yKJnmGpRPMUWL">"帮我订机票"原返回 15 万条航班记录，现明确拒绝</td></tr>
+  <tr data-page-node-id="rrHbfrewTKbY1ZVnJzQ7w7"><td data-page-node-id="NifY2IvwRQhwuPGRRoUHHF">编造业务数字</td><td class="num" data-page-node-id="mW82oJ7lFUa3nJFTf242P5"><span class="pill p-bad" data-page-node-id="FI9uaRZfywPUcR8o8F4JhH">会发生</span></td><td class="num" data-page-node-id="E0Ad2nBmcZKgn1B3XHUjjf"><span class="pill p-good" data-page-node-id="utwNatP8zWI5OFkehRpHvw">已阻断</span></td><td data-page-node-id="RngWUhtcapTHphnA3QHoIe">提示词安全边界 + 模型不调工具时不覆盖</td></tr>
+
+  <tr data-page-node-id="aBUI07bjOIzYxEuGXtG0cE">
+    <td rowspan="3" data-page-node-id="7sz8zcGVyR0OhKg0vwqTWS"><b data-page-node-id="PP0GiexWVFHBhMdD379VfB">响应速度</b></td>
+    <td data-page-node-id="3M08cWLCovfjT7VA59tGvr">明确问法（6/14 请求）</td><td class="num" data-page-node-id="K9SzzQ7Y7V39GK0dQGRZ5L">30–180 ms</td><td class="num flat" data-page-node-id="xIBgzTaY1xZHsNVVp3D64I">29–176 ms</td><td data-page-node-id="mZCSFHuz153oXwWtzScqu5">持平，且零模型调用</td></tr>
+  <tr data-page-node-id="OVN5FVx1VNWrcud56QWysk"><td data-page-node-id="SiTL7H5NNbTjEmqZX9MOte">隐式问法（8/14 请求）</td><td class="num" data-page-node-id="eEBCpKblnKqOAWWCu5YWHX">~36 ms（但答错）</td><td class="num down" data-page-node-id="E0TDAqNpcTEWAlYx8GCuH7">0.64–6.2 s</td><td data-page-node-id="AT0vJ5znWlIQiSlRbMU4J6"><b data-page-node-id="Dldk1YBOKLO6vI80LshjN7">变慢</b>：新增一次模型往返换正确性，见下方说明</td></tr>
+  <tr data-page-node-id="d58lxbTFjw8bw7eJ8CJubf"><td data-page-node-id="ffFxsv16E7Xbr0rsz56NMo">平均端到端</td><td class="num" data-page-node-id="Qbvur8c0z4X3YyTyANH7K3">—</td><td class="num" data-page-node-id="KtUAws3ZzR4z7f8etncwCx">1669 ms</td><td data-page-node-id="5m1l4PD3MktzATB8J90fwX">纯模型方案为 2790 ms，混合路由快 40%</td></tr>
+
+  <tr data-page-node-id="IXrdWb9MpHs9R4i8ivUJ1i">
+    <td rowspan="2" data-page-node-id="nZYLpo01JYY5vcECrUENmq"><b data-page-node-id="rgprfLYXdTT92FpLxeJUGw">效率（token）</b></td>
+    <td data-page-node-id="Wa17ETl1jZ9HXkwO3ECV2I">明确问法</td><td class="num" data-page-node-id="KW7VXFpjQ13i8SMI9vHjwA">0</td><td class="num flat" data-page-node-id="HBlEC4TN2bwHEXqTyJS3of">0</td><td data-page-node-id="ODEeQDDSAjFl2ohX4KfgT6">强关键词快捷路径不消耗 token</td></tr>
+  <tr data-page-node-id="gDbrLBFoiBaUms43Hidu54"><td data-page-node-id="ZbDNZpw5FW9hUy8oX3WZ6j">单次模型路由</td><td class="num" data-page-node-id="zjFdgMaT4Czsbix81WvFzq">—</td><td class="num" data-page-node-id="LvA2Tc6inc2XdsIX4mIfFf">≈2900 tok</td><td data-page-node-id="SV3t4grtBbTy36Ad0wpPXf">其中约 2700 是 5 个工具的 Schema；可用 Tool RAG 压缩</td></tr>
+
+  <tr data-page-node-id="7R2tCL9MmErJ5De7F3hjue">
+    <td data-page-node-id="7l3y2yqGn6dNBsedvGtyFr"><b data-page-node-id="kZJkRNKl0YT0UTyM1iLIT8">正确性回归</b></td>
+    <td data-page-node-id="l2C3SHaMEpYt6A38rGfWlD">既有断言</td><td class="num" data-page-node-id="zP0hP0iUcIyk5PeJ8YrfQf">93/93</td><td class="num up" data-page-node-id="nMBK6AaSIM7mY1Chh4SrG9">93/93</td><td data-page-node-id="Qaw0e4BKSusGccBaSHz2NW">工具 42 + 数据层 31 + 缓存 20，全部通过</td></tr>
+</table>
+<div class="note" data-page-node-id="AKgQxfE1tA5HNTz7aJDeWA">
+  <b data-page-node-id="8jwoMWxM6HgO2wjGmmRLRL">关于响应速度的诚实说明：</b>隐式问法的绝对延迟确实上升了（多一次模型往返）。这是拿延迟换正确性的权衡——原方案 36 ms 但答错。
+  为把代价压到最小，混合路由让 43% 的请求（明确问法）保持零模型调用；相比"全部交给模型"的方案，
+  平均耗时从 2790 ms 降到 1669 ms（−40%）、token 从 41243 降到 23865（−42%），同时准确率反而更高。
+</div>
+</div>
+
+<h2 data-page-node-id="6Zj5UIZHZTV8zS7bRWicGy">三、过程中修掉的真实缺陷</h2>
+<div class="card" data-page-node-id="Ertb4iFaXBODbfkaJyEHyR">
+<ul data-page-node-id="BRwyf3MHUxznARrM7dOsXy">
+  <li data-page-node-id="7YolH8ot1VA2FyLsNM06Gi"><b data-page-node-id="ntFu9JArXpxEMLWCu13Tzb">纯模型路由会让明确问法退化</b>（100%→80%，"航司层级气泡图"被漏掉）→ 加入强关键词快捷路径。</li>
+  <li data-page-node-id="QDVY9AGiWFYLOAWT6cGhV1"><b data-page-node-id="JGj6c6S3vzJjpxWv7Byp0R">模型常省略可选参数</b>：未传 <code data-page-node-id="Hwz9toDeih3OAI4u8ES7ts">dimension</code>，把"哪家航司取消最多"折叠成 1 个分组 → <code data-page-node-id="xX5GatZsftTl2ktQuR1kCm">mergeParams()</code> 模型参数优先、规则抽取补齐。</li>
+  <li data-page-node-id="G5s0wwh8pEsxq21omswwf4"><b data-page-node-id="bMt3VZ1TdaGzDAyzK3qJN4">强关键词抢走多步问题</b>："分别给我 2017 和 2018"被折叠成单年 → 多步信号检测（分别/对比/两年/趋势…）跳过快捷路径。</li>
+  <li data-page-node-id="tfjriU1cEWotypT6Jty6no"><b data-page-node-id="Y5kiErEmTqisV9ZFQHHS0H">模型陷入重复调用循环</b> → 轮次上限 + 强制总结兜底。</li>
+  <li data-page-node-id="IUSosKAuFCNVSeql9W8TQJ"><b data-page-node-id="WqC4Ez5Oz3nWNFGsnNjG8r">原实现最危险的行为</b>："帮我订一张机票"命中 <code data-page-node-id="vGcdim5illF396lxLOqwag">flight.query</code>，返回"共 150,860 条航班记录"，看起来像成功。</li>
+</ul>
+</div>
+
+<h2 data-page-node-id="k3E6z8KEb00vLdMFxsfUyL">四、改动文件</h2>
+<div class="card" data-page-node-id="nufRYyj5slt5iBkS6LJEeU">
+<table data-page-node-id="s1O8mt5SHSQOnhNbZNMs5f">
+  <tr data-page-node-id="FSGz8AZBxCIuKXAJBz7brg"><th style="width:330px" data-page-node-id="mCX3Xn7bmWXjTVatFbpKlk">文件</th><th data-page-node-id="DztayiVuepwohGRlqyd7lG">改动</th></tr>
+  <tr data-page-node-id="YyyaWB2gyGNLkCVpUiF230"><td data-page-node-id="zsCbEEUdSUcyXtqgOXmZzi"><code data-page-node-id="s0y0od5QlBkP60Sv4C5IML">bknd/src/ai-agent/tools/tool-schema.ts</code></td><td data-page-node-id="AP8ywuYi6M497ZKMbF8iGc">新增 · 共享参数 Schema 片段</td></tr>
+  <tr data-page-node-id="7rzOSR5o3b6ZYzJ5NZOUrP"><td data-page-node-id="Vgn99L53xkGSIdBYQPRC6h"><code data-page-node-id="geTjSfRe6lOlxqnRW6Eugj">bknd/src/ai-agent/tools/base-tool.ts</code></td><td data-page-node-id="DKqT25DCZFAAurzA7GdDUp"><code data-page-node-id="cjFx8eNdrkgDbZq5Nnn7cs">ToolDefinition</code> 增 <code data-page-node-id="OdxXDfq7VnFFNbzsNaiLPn">parameters</code></td></tr>
+  <tr data-page-node-id="2WAJvcLhekyOHvohoCHdEt"><td data-page-node-id="m7RrC0kBgv00Mr79ksKCtU"><code data-page-node-id="lVJcKy0FsUwG1p3vkI8Nkt">bknd/src/ai-agent/tools/tool-registry.service.ts</code></td><td data-page-node-id="qpa7CslFwDRYFLortop1hI">新增 <code data-page-node-id="8krHDDdYi5g5fRn24HUqwg">toolSpecs()</code>（导出 Schema）、<code data-page-node-id="Ste6tCpA6V7u4lmtBO64rg">matchStrong()</code>（强关键词）</td></tr>
+  <tr data-page-node-id="a28xH3b1u5oY3VeBjo3ksi"><td data-page-node-id="ppirU3Vdb7zgVThjIkxyDc"><code data-page-node-id="UVe6v3rg5FHCigtLq4SPz6">bknd/src/ai-agent/tools/{user,flight,dashboard-*}.tool.ts</code></td><td data-page-node-id="8VlyYVECwdBFtoHtKEIvET">5 个工具补参数 Schema；优化 user.query 描述与 topN 引导</td></tr>
+  <tr data-page-node-id="0KnlSPfK0h84Ax697q2KQc"><td data-page-node-id="DvYLfZFQK6zZibRJEXHIX4"><code data-page-node-id="paj521gcUaHdIWIEMrPvdD">bknd/src/ai-agent/llm/llm.types.ts</code></td><td data-page-node-id="ApwrGpqUF1GEscGNDbDezd"><code data-page-node-id="avaHc4d9xeRdQINslSxQsq">tools/toolChoice/toolCalls/toolsUnsupported</code>、message 支持 tool 角色</td></tr>
+  <tr data-page-node-id="pqrIBsYBDGnKbT0cYT9HTA"><td data-page-node-id="o8w4kNcJIhkpFWeDqFUoeZ"><code data-page-node-id="8ZMiJc3QS6DntE5xtIyV4U">bknd/src/ai-agent/llm/llm.adapter.ts</code></td><td data-page-node-id="IdSxdUtD6bIc5CP3lPryIH">Function calling 传输与解析、不支持时自动降级</td></tr>
+  <tr data-page-node-id="lmQlkIumDIJCskMTrHLGDD"><td data-page-node-id="vbOUMwIbpOldKYFDkHL0Ca"><code data-page-node-id="00BV8VuwMAHfMlzJdjZl0l">bknd/src/ai-agent/ai-agent.service.ts</code></td><td data-page-node-id="zbGsTPLF8YABlsAwKCvpO5">分层提示词 + 混合路由 + 多轮编排 + <code data-page-node-id="4JByr8mwzjtkaUEArwNrBC">routedBy</code> 可观测字段</td></tr>
+  <tr data-page-node-id="m2lbjfO5zbwFYpnXBftfqh"><td data-page-node-id="zOrGSejcFnUECEhvevsiX3"><code data-page-node-id="eVhYuQVHUDKLeOdqiqW6AR">bknd/.env</code></td><td data-page-node-id="940s0AE907EH5ije70FWwl"><code data-page-node-id="s37PJ9JSHDRvH6xS9HUVCE">AI_TOOL_ROUTING=auto</code>（可切 model / keyword）</td></tr>
+  <tr data-page-node-id="399UyjUNGpYg48W9eqzfKX"><td data-page-node-id="KjNXvKrsXTS7O31wtIrlaK"><code data-page-node-id="7C8RuXu2Jm0c9ZDLPltoUC">.cache/bench-*.mjs</code></td><td data-page-node-id="ZzNIAR1viWn0olxDCmROnb">新增 3 个基准脚本（路由 / 端到端 / 幻觉）</td></tr>
+</table>
+</div>
+
+<h2 data-page-node-id="3Sp1X4GM9dx0CGcl8lZv0q">五、未做（诚实标注）</h2>
+<div class="card" data-page-node-id="KPbtJhdGK14xjzoF84owXW">
+<ul data-page-node-id="gHeqGRgulLzTUl0zd5E01G">
+  <li data-page-node-id="8V7mzlhBIIt1J0N25CjErq"><span class="pill p-warn" data-page-node-id="E5mcSOyOWyEzdKLIf3C0AA">未落地</span> <b data-page-node-id="uwNIFftDEUBYsnhHjnDXxw">RAG</b>：pgvector 已就绪，但无 embedding 服务与文档源；且当前仅 5 个工具，不需要 Tool RAG。建议先补"指标口径问答"知识库。</li>
+  <li data-page-node-id="7pvLEA6ysdrPVOXODXDLVJ"><span class="pill p-info" data-page-node-id="0MhAdz5tRiwf4gSjlZCXkZ">等价实现</span> <b data-page-node-id="R9U0XRVlOclKp9Z7vdGruP">LangGraph</b>：<code data-page-node-id="W7KZ4bTC6beU8c9x2LiVRt">@langchain/langgraph</code> 已装但 <code data-page-node-id="hw41pwzNV0NoECpzXQ2JeY">@langchain/core</code> peer 缺失。多步能力用自写循环实现；<code data-page-node-id="S3nNY2JThUz3nAAHlql7Sy">langgraph-checkpointer.ts</code> 已是 LangGraph 契约实现，将来接入可直接复用。</li>
+  <li data-page-node-id="mn2vAO3LMQGlbu3NaVUOSH"><span class="pill p-warn" data-page-node-id="gjVYQSAE3Dq2GBI7iWFXoL">已知限制</span> 复杂多步对比（如"分别给我 2017 和 2018 并比较"）仍受限于模型理解与工具字段覆盖，未达完美。</li>
+</ul>
+</div>
+
+<h2 data-page-node-id="XqHmdjcacZgaVScwNCeODJ">六、如何复现</h2>
+<div class="card" data-page-node-id="pcBaFPd8ZqlqjlIYn5Czgg">
+<ul data-page-node-id="zJq0ENVu3MerAvRDjYlgSa">
+  <li data-page-node-id="ERVJ2Poy3wZ7dBtngwMhOE"><code data-page-node-id="rqS9y1tqTmlEssSpAiCFxX">node .cache/bench-routing.mjs</code> — 纯路由准确率（不消耗 token）</li>
+  <li data-page-node-id="nN8gnAHB32AuJz07S1Fq4J"><code data-page-node-id="2p1QCQCgux1KK18UwE7xHN">node .cache/bench-e2e-routing.mjs</code> — 端到端 14 例（跑前请清 <code data-page-node-id="y2Z1R31hRDpk3RAmm3gHJZ">ai:chat_cache:*</code>，否则缓存掩盖真实行为）</li>
+  <li data-page-node-id="nqtRyUR9C7t0CTLWCeKglE"><code data-page-node-id="sXfgFqZQkYEzWRRnWXE7ii">node .cache/bench-hallucination.mjs</code> — 越界/写操作拒绝率</li>
+  <li data-page-node-id="WYT1H8JSVo2p9ERdgL84b8"><code data-page-node-id="tizZwJU2wD319DD8lRZWwr">node .cache/verify-ai-tools.mjs</code> / <code data-page-node-id="xAGSCxNuudSTHYrQCTFG6A">verify-ai-agent.mjs</code> / <code data-page-node-id="cLJl3GCyq1q6FIeGj44bhX">verify-ai-cache.mjs</code> — 93 项回归</li>
+</ul>
+</div>
+
+<div class="foot" data-page-node-id="xxHrhkwcPolt8FLypyM3Qr">
+  数据来源：本地实测（Qwen qwen-plus，2026-09-29）。延迟受模型服务波动影响，量级比绝对值更有意义。
+</div>
+
+</div>
+</body>
+</html>
