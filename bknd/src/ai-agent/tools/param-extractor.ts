@@ -153,16 +153,42 @@ export function extractTopN(query: string): number | undefined {
 const SCALE_UNITS: Record<string, number> = { 万: 10_000, 千: 1_000, 亿: 100_000_000 };
 
 /**
- * Numeric range filters such as 「取消航班数超过 1 万」「延误分钟低于 5 万」.
+ * Delay-cause fields.
+ *
+ * The requirement lists 延误原因 as a filter dimension, and the business table
+ * stores five causes (each with a count and a minute total). They are not chart
+ * metrics — the chart contract only plots the five headline measures — but they
+ * are perfectly valid range filters, so they are resolved separately.
+ */
+const CAUSE_COUNT_FIELDS: Array<{ re: RegExp; field: string }> = [
+  { re: /(天气|weather)/i, field: 'weather_delay' },
+  { re: /(空管|流量|nas|航空管制)/i, field: 'nas_delay' },
+  { re: /(安检|安保|security)/i, field: 'security_delay' },
+  { re: /(航司原因|承运人原因|carrier)/i, field: 'carrier_delay' },
+  { re: /(晚到|上一(班|段)飞机|前序航班|late aircraft)/i, field: 'late_aircraft_delay' },
+];
+
+/** Resolves "天气原因延误" to `weather_delay`, "空管次数" to `nas_ct`, … */
+export function extractDelayCauseField(query: string): string | undefined {
+  const wantsCount = /(次数|次|笔数|航班数)/.test(query);
+  for (const { re, field } of CAUSE_COUNT_FIELDS) {
+    if (!re.test(query)) continue;
+    return wantsCount ? field.replace(/_delay$/, '_ct') : field;
+  }
+  return undefined;
+}
+
+/**
+ * Numeric range filters such as 「取消航班数超过 1 万」「天气原因延误低于 5 万」.
  *
  * A bare two-digit number is ignored on purpose: "延误 15 分钟以上" names the
  * `arr_del15` metric, it is not a range filter.
  */
 export function extractRanges(
   query: string,
-  metric: ChartMetric | undefined,
+  field: string | undefined,
 ): Record<string, { min?: number; max?: number }> | undefined {
-  if (!metric) return undefined;
+  if (!field) return undefined;
 
   const patterns: Array<{ re: RegExp; kind: 'min' | 'max' }> = [
     { re: /(超过|高于|大于|多于|至少|不低于)\s*([\d.]+)\s*(万|千|亿)?/, kind: 'min' },
@@ -178,7 +204,7 @@ export function extractRanges(
     // Without a unit only unambiguous magnitudes (1000+) are accepted.
     if (!unit && raw < 1000) continue;
     const value = unit ? Math.round(raw * SCALE_UNITS[unit]) : Math.round(raw);
-    return { [metric]: kind === 'min' ? { min: value } : { max: value } };
+    return { [field]: kind === 'min' ? { min: value } : { max: value } };
   }
 
   return undefined;
@@ -209,7 +235,10 @@ export function extractFilters(query: string): ExtractedFilters {
   const topN = extractTopN(query);
   if (topN) result.topN = topN;
 
-  const ranges = extractRanges(query, metric);
+  // A named delay cause ("天气原因延误") overrides the headline metric when the
+  // question also carries a magnitude filter.
+  const rangeField = extractDelayCauseField(query) ?? metric;
+  const ranges = extractRanges(query, rangeField);
   if (ranges) result.ranges = ranges;
 
   // Carrier / airport names ("Alaska Airlines", "阿拉斯加航空", "ATL") are

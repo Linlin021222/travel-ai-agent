@@ -4,6 +4,7 @@ import {
   setEntityDictionary,
 } from '../src/ai-agent/tools/entity-dictionary.js';
 import {
+  extractDelayCauseField,
   extractFilters,
   extractRanges,
   extractTopN,
@@ -127,7 +128,29 @@ describe('extractRanges', () => {
     expect(extractRanges('延误15分钟以上的航班', 'arr_del15')).toBeUndefined();
   });
 
-  it('needs a metric to attach the range to', () => {
+  it('needs a field to attach the range to', () => {
     expect(extractRanges('超过1万', undefined)).toBeUndefined();
+  });
+});
+
+describe('extractDelayCauseField', () => {
+  it('maps each delay cause to its column', () => {
+    expect(extractDelayCauseField('天气原因延误')).toBe('weather_delay');
+    expect(extractDelayCauseField('空管原因造成的延误')).toBe('nas_delay');
+    expect(extractDelayCauseField('安检原因延误')).toBe('security_delay');
+    expect(extractDelayCauseField('航司原因延误')).toBe('carrier_delay');
+    expect(extractDelayCauseField('前序航班晚到导致的延误')).toBe('late_aircraft_delay');
+  });
+
+  it('switches to the count column when the question counts flights', () => {
+    expect(extractDelayCauseField('天气原因延误的航班数')).toBe('weather_ct');
+  });
+});
+
+describe('delay cause filters end to end', () => {
+  it('combines a cause filter with a magnitude', () => {
+    const filters = extractFilters('天气原因延误超过500万的航司条形图');
+    expect(filters.ranges).toEqual({ weather_delay: { min: 5_000_000 } });
+    expect(filters.dimension).toBe('carrier');
   });
 });
