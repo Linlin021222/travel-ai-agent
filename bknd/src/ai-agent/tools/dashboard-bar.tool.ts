@@ -4,6 +4,7 @@ import { BaseTool, type ToolDefinition } from './base-tool.js';
 import { AuditedTool } from './tool-audit.js';
 import { flightFilters, schema } from './tool-schema.js';
 import { extractFilters } from './param-extractor.js';
+import { describeCodes } from './entity-dictionary.js';
 import { buildFlightDto } from './query-dto.js';
 import {
   toolSuccess,
@@ -61,8 +62,8 @@ export class DashboardBarTool extends BaseTool<DashboardBarParams, BarChartPaylo
         type: 'integer',
         minimum: 1,
         description:
-          '只返回数值最大的前 N 个维度值。仅当用户明确问"最多的那一个""第一名"时才填 1；' +
-          '比较/排名类提问请填 10 或留空，以便展示对比。',
+          '只返回数值最大的前 N 个维度值，例如"取前五名"填 5、"最多的那一个"填 1。' +
+          '用户没有提排名数量时**不要填**，留空表示返回全部维度值。',
       },
       ...flightFilters(),
     }),
@@ -95,13 +96,20 @@ export class DashboardBarTool extends BaseTool<DashboardBarParams, BarChartPaylo
     const aggregate = await this.dashboard.bar(dto);
 
     let points = aggregate.data;
-    const topN = Math.min(100, Math.max(1, Math.trunc(params.topN ?? 0) || 0));
+    // 0 / undefined means "no limit". The previous `Math.max(1, …)` turned
+    // "not specified" into 1, which silently collapsed every bar chart to its
+    // single largest group.
+    const requestedTopN = Math.trunc(params.topN ?? 0);
+    const topN = requestedTopN > 0 ? Math.min(100, requestedTopN) : 0;
     if (topN > 0 && aggregate.dimension !== 'date') {
       points = [...points].sort((a, b) => b.value - a.value).slice(0, topN);
     }
 
     const dimensionLabel = this.dashboard.dimensionLabel(aggregate.dimension);
     const metricLabel = this.dashboard.metricLabel(aggregate.metric);
+    const filters = describeFilters(params);
+    const filterLabel = describeFilterLabel(params);
+    const scope = filterLabel ? `（筛选：${filterLabel}）` : '';
 
     return toolSuccess(
       this.definition.name,
@@ -121,10 +129,38 @@ export class DashboardBarTool extends BaseTool<DashboardBarParams, BarChartPaylo
       {
         message:
           topN > 0 && points.length
-            ? `已按${dimensionLabel}统计${metricLabel}，取前 ${points.length} 名：${points[0].label} 以 ${points[0].value.toLocaleString('zh-CN')} 领先`
-            : `已按${dimensionLabel}统计${metricLabel}，共 ${points.length} 个分组`,
-        meta: { topN: topN || null, filtered: aggregate.data.length },
+            ? `已按${dimensionLabel}统计${metricLabel}${scope}，取前 ${points.length} 名：${points[0].label} 以 ${points[0].value.toLocaleString('zh-CN')} 领先`
+            : `已按${dimensionLabel}统计${metricLabel}${scope}，共 ${points.length} 个分组`,
+        meta: {
+          topN: topN || null,
+          totalGroups: aggregate.data.length,
+          returnedGroups: points.length,
+          filters,
+        },
       },
     );
   }
+}
+
+/** Human-readable echo of the applied filters, e.g. "美联航、2017年". */
+function describeFilterLabel(params: DashboardBarParams): string {
+  const parts: string[] = [];
+  if (params.carriers?.length) parts.push(describeCodes('carriers', params.carriers));
+  if (params.airports?.length) parts.push(describeCodes('airports', params.airports));
+  if (params.years?.length) parts.push(`${params.years.join('、')} 年`);
+  if (params.months?.length) parts.push(`${params.months.join('、')} 月`);
+  return parts.join('、');
+}
+
+/** Echoes the filters that survived, so the UI can show what was applied. */
+function describeFilters(params: DashboardBarParams): Record<string, unknown> {
+  const filters: Record<string, unknown> = {};
+  if (params.carriers?.length) filters.carriers = params.carriers;
+  if (params.airports?.length) filters.airports = params.airports;
+  if (params.years?.length) filters.years = params.years;
+  if (params.months?.length) filters.months = params.months;
+  if (params.dateFrom) filters.dateFrom = params.dateFrom;
+  if (params.dateTo) filters.dateTo = params.dateTo;
+  if (params.ranges && Object.keys(params.ranges).length) filters.ranges = params.ranges;
+  return filters;
 }

@@ -191,6 +191,23 @@ const FULLY_MASKED_KEYS = new Set([
 
 const PARTIALLY_MASKED_KEYS = new Set(['email', 'mail', 'phone', 'mobile', 'idcard']);
 
+/**
+ * Stem matching so prefixed variants are covered too: `contactEmail` and
+ * `user_token` must be masked exactly like `email` and `token`.
+ */
+const FULLY_MASKED_STEMS = [
+  'password',
+  'passwd',
+  'token',
+  'secret',
+  'authorization',
+  'apikey',
+  'api_key',
+  'credential',
+] as const;
+
+const PARTIALLY_MASKED_STEMS = ['email', 'mail', 'phone', 'mobile', 'idcard', 'id_card'] as const;
+
 /** `alice@example.com` -> `al***@example.com` */
 export function maskEmail(value: string): string {
   const at = value.indexOf('@');
@@ -223,11 +240,13 @@ export function maskSensitive<T>(payload: T): T {
   const output: Record<string, unknown> = {};
   for (const [rawKey, value] of Object.entries(payload)) {
     const key = rawKey.toLowerCase();
-    if (FULLY_MASKED_KEYS.has(key)) {
+    if (FULLY_MASKED_KEYS.has(key) || FULLY_MASKED_STEMS.some((stem) => key.includes(stem))) {
       output[rawKey] = '***';
       continue;
     }
-    if (PARTIALLY_MASKED_KEYS.has(key) && typeof value === 'string') {
+    const partiallySensitive =
+      PARTIALLY_MASKED_KEYS.has(key) || PARTIALLY_MASKED_STEMS.some((stem) => key.includes(stem));
+    if (partiallySensitive && typeof value === 'string') {
       output[rawKey] = key.includes('mail') ? maskEmail(value) : `${value.slice(0, 3)}***`;
       continue;
     }

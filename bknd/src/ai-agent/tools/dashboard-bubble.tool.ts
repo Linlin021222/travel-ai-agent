@@ -4,6 +4,7 @@ import { BaseTool, type ToolDefinition } from './base-tool.js';
 import { AuditedTool } from './tool-audit.js';
 import { flightFilters, schema } from './tool-schema.js';
 import { extractFilters } from './param-extractor.js';
+import { describeCodes } from './entity-dictionary.js';
 import { buildFlightDto } from './query-dto.js';
 import {
   toolSuccess,
@@ -52,7 +53,11 @@ export class DashboardBubbleTool extends BaseTool<DashboardBubbleParams, BubbleC
         description: '气泡大小所依据的指标。',
       },
       maxLevel: { type: 'integer', minimum: 1, maximum: 2, description: '展开层级，1 航司、2 含机场。' },
-      topN: { type: 'integer', minimum: 1, description: '只返回最大的前 N 个航司节点。' },
+      topN: {
+        type: 'integer',
+        minimum: 1,
+        description: '只返回数值最大的前 N 个航司节点；用户没有提排名数量时不要填，留空返回全部航司。',
+      },
       ...flightFilters(),
     }),
   };
@@ -76,7 +81,10 @@ export class DashboardBubbleTool extends BaseTool<DashboardBubbleParams, BubbleC
 
     const metric = params.metric && isMetric(params.metric) ? params.metric : 'arr_flights';
     const maxLevel = params.maxLevel === 1 ? 1 : 2;
-    const topN = Math.min(60, Math.max(1, Math.trunc(params.topN ?? 0) || 0));
+    // 0 / undefined = every carrier. `Math.max(1, …)` used to force a single
+    // bubble even when the user asked for the whole airline hierarchy.
+    const requestedTopN = Math.trunc(params.topN ?? 0);
+    const topN = requestedTopN > 0 ? Math.min(60, requestedTopN) : 0;
 
     const grouped = new Map<string, { name: string; children: BubbleNode[]; total: number }>();
 
@@ -119,10 +127,25 @@ export class DashboardBubbleTool extends BaseTool<DashboardBubbleParams, BubbleC
     if (topN > 0) nodes = nodes.slice(0, topN);
 
     const metricLabel = this.dashboard.metricLabel(metric);
+    const filters: Record<string, unknown> = {};
+    if (params.carriers?.length) filters.carriers = params.carriers;
+    if (params.airports?.length) filters.airports = params.airports;
+    if (params.years?.length) filters.years = params.years;
+    if (params.months?.length) filters.months = params.months;
+    if (params.dateFrom) filters.dateFrom = params.dateFrom;
+    if (params.dateTo) filters.dateTo = params.dateTo;
+    if (params.ranges && Object.keys(params.ranges).length) filters.ranges = params.ranges;
+
+    const carrierLabel = params.carriers?.length ? `${describeCodes('carriers', params.carriers)} ` : '';
 
     return toolSuccess(this.definition.name, 'chart', { chartType: 'bubble', metric, metricLabel, nodes }, {
-      message: `气泡图已生成：${nodes.length} 家航司${maxLevel >= 2 ? '，可下钻查看机场层级' : ''}（指标：${metricLabel}）`,
-      meta: { maxLevel, airportNodes: nodes.reduce((sum, node) => sum + (node.children?.length ?? 0), 0) },
+      message: `气泡图已生成：${carrierLabel}${nodes.length} 家航司${maxLevel >= 2 ? '，可下钻查看机场层级' : ''}（指标：${metricLabel}）`,
+      meta: {
+        maxLevel,
+        topN: topN || null,
+        airportNodes: nodes.reduce((sum, node) => sum + (node.children?.length ?? 0), 0),
+        filters,
+      },
     });
   }
 }

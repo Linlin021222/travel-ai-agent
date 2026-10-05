@@ -227,6 +227,17 @@ Design notes:
 - The frontend picks a renderer purely from `resultType` + `data.chartType`, so adding a
   tool never requires frontend changes.
 
+### Parameter extraction
+
+Names are translated into codes through a dictionary loaded from the same
+`getFilterOptions` catalogue the Flight info page uses (23 carriers, 378 airports,
+plus a Chinese alias table), so "Alaska Airlines" / "阿拉斯加航空" / "ATL" all become the
+`AS` / `ATL` filter. Ranking questions understand Chinese numerals and explicit limits
+("取前五名" -> 5, "前十" -> 10), and an unspecified limit means *all* groups rather than
+the single largest one. Literal filters (year, top-N, carrier, airport, value range)
+outrank the model's guess, while semantic parameters (dimension, metric) stay
+model-first. Every tool result echoes the filters it applied in `meta.filters`.
+
 ### Hybrid routing
 
 Routing combines three paths instead of always asking the model:

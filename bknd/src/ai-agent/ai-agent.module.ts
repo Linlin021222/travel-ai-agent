@@ -20,6 +20,7 @@ import { AiTaskRecordService } from './services/ai-task-record.service.js';
 import { AiUserMemoryService } from './services/ai-user-memory.service.js';
 import { AiToolController } from './controllers/ai-tool.controller.js';
 import { AI_TOOL_CLASSES, type BaseTool } from './tools/index.js';
+import { EntityDictionaryService } from './tools/entity-dictionary.service.js';
 import { ToolRegistryService } from './tools/tool-registry.service.js';
 import { DashboardModule } from '../dashboard/dashboard.module.js';
 import { FlightDelayModule } from '../flight-delay/flight-delay.module.js';
@@ -86,10 +87,17 @@ export const TOOL_BOOTSTRAP: FactoryProvider = {
     AiUserMemoryService,
     AiTaskRecordService,
     AiOperationAuditService,
+    EntityDictionaryService,
     ...AI_TOOL_CLASSES,
     ToolRegistryService,
     TOOL_BOOTSTRAP,
   ],
-  exports: [AiCacheService, AiChatSessionService, AiUserMemoryService, ToolRegistryService],
+  exports: [
+    AiCacheService,
+    AiChatSessionService,
+    AiUserMemoryService,
+    ToolRegistryService,
+    EntityDictionaryService,
+  ],
 })
 export class AiAgentModule {}

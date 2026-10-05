@@ -4,6 +4,7 @@ import type { Request } from 'express';
 import type { AuthUser } from '../../common/auth/auth-user.js';
 import { CurrentUser } from '../../common/auth/current-user.decorator.js';
 import { JwtAuthGuard } from '../../common/auth/jwt-auth.guard.js';
+import { EntityDictionaryService } from '../tools/entity-dictionary.service.js';
 import { ToolRegistryService } from '../tools/tool-registry.service.js';
 import type { ToolContext } from '../tools/tool.types.js';
 
@@ -18,7 +19,10 @@ import type { ToolContext } from '../tools/tool.types.js';
 @UseGuards(JwtAuthGuard)
 @Controller('ai-agent/tools')
 export class AiToolController {
-  constructor(private readonly registry: ToolRegistryService) {}
+  constructor(
+    private readonly registry: ToolRegistryService,
+    private readonly entities: EntityDictionaryService,
+  ) {}
 
   @Get()
   @ApiOperation({ summary: '列出所有已注册工具（名称/意图/权限/启用状态）' })
@@ -28,9 +32,19 @@ export class AiToolController {
 
   @Post('match')
   @ApiOperation({ summary: '按问题文本匹配最合适的工具' })
-  match(@Body() body: { query?: string; intent?: string }) {
+  async match(@Body() body: { query?: string; intent?: string }) {
+    await this.entities.ensureLoaded();
     const match = this.registry.match(body?.query ?? '', (body?.intent ?? undefined) as never);
     return { match };
+  }
+
+  @Post('reload-entities')
+  @ApiOperation({ summary: '重新加载航司/机场字典（数据重新入库后调用，仅管理员）' })
+  async reloadEntities(@CurrentUser() user: AuthUser) {
+    if (!user.isAdmin) {
+      throw new ForbiddenException('仅管理员可以重载实体字典');
+    }
+    return { entities: await this.entities.refresh() };
   }
 
   @Post(':name/execute')

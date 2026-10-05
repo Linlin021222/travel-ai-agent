@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>工具参数修复报告 · 第三周</title>
+<style>
+  :root {
+    --ink: #1f2328;
+    --ink-2: #57606a;
+    --line: #d8dee4;
+    --bg: #f6f8fa;
+    --blue: #0969da;
+    --red: #cf222e;
+    --green: #1a7f37;
+    --amber: #9a6700;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 40px 20px 64px;
+    background: var(--bg);
+    color: var(--ink);
+    font: 15px/1.7 -apple-system, "Segoe UI", "Microsoft YaHei", sans-serif;
+  }
+  .wrap { max-width: 980px; margin: 0 auto; }
+  h1 { font-size: 26px; margin: 0 0 6px; }
+  .sub { color: var(--ink-2); margin-bottom: 28px; }
+  h2 {
+    font-size: 19px;
+    margin: 36px 0 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--line);
+  }
+  h3 { font-size: 16px; margin: 22px 0 8px; }
+  .card {
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 18px 20px;
+    margin: 14px 0;
+  }
+  table { width: 100%; border-collapse: collapse; background: #fff; font-size: 14px; }
+  th, td { border: 1px solid var(--line); padding: 9px 11px; text-align: left; vertical-align: top; }
+  th { background: #f2f5f8; font-weight: 600; }
+  code {
+    background: #f2f5f8;
+    border: 1px solid var(--line);
+    border-radius: 5px;
+    padding: 1px 5px;
+    font: 13px/1.5 ui-monospace, Consolas, monospace;
+  }
+  pre {
+    background: #0f172a;
+    color: #e6edf3;
+    border-radius: 8px;
+    padding: 14px 16px;
+    overflow-x: auto;
+    font: 13px/1.6 ui-monospace, Consolas, monospace;
+  }
+  .bad { color: var(--red); font-weight: 600; }
+  .good { color: var(--green); font-weight: 600; }
+  .warn { color: var(--amber); font-weight: 600; }
+  .pill {
+    display: inline-block;
+    background: #eef4ff;
+    color: var(--blue);
+    border-radius: 999px;
+    padding: 2px 10px;
+    font-size: 12px;
+    margin-right: 6px;
+  }
+  ul { margin: 8px 0 8px 20px; }
+  li { margin: 4px 0; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>工具参数修复报告</h1>
+  <div class="sub">
+    问题：同一问题换个说法（“取前五名”“Alaska Airlines”）答案不变 · 修复与验证记录 · 2026-10-05
+  </div>
+
+  <h2>一、现象</h2>
+  <table>
+    <tr><th style="width:52%">提问</th><th>修复前返回</th><th>应该返回</th></tr>
+    <tr>
+      <td>按航司统计取消航班的条形图</td>
+      <td class="bad">1 个分组（ExpressJet 独占）</td>
+      <td>23 家航司对比</td>
+    </tr>
+    <tr>
+      <td>按航司统计取消航班的条形图，<b>取前五名</b></td>
+      <td class="bad">与上一问完全相同（1 个分组）</td>
+      <td>前 5 名，按取消量降序</td>
+    </tr>
+    <tr>
+      <td>航司层级气泡图</td>
+      <td class="bad">1 个气泡（Southwest）</td>
+      <td>23 家航司气泡</td>
+    </tr>
+    <tr>
+      <td><b>Alaska Airlines</b>航司层级气泡图</td>
+      <td class="bad">仍是 Southwest 那一个气泡</td>
+      <td>只显示 Alaska Airlines</td>
+    </tr>
+  </table>
+  <p>
+    结论：不是“回答呆板”，而是<b>参数抽取丢了信息</b>——用户说的“前五名”和“Alaska Airlines”根本没有传到工具，
+    两次提问因此落到了完全相同的参数上，输出自然一模一样。
+  </p>
+
+  <h2>二、根因（三个缺陷叠加）</h2>
+
+  <h3>缺陷 1：topN 默认值把“不限制”变成了 1</h3>
+  <pre>// 修复前 bknd/src/ai-agent/tools/dashboard-bar.tool.ts
+const topN = Math.min(100, Math.max(1, Math.trunc(params.topN ?? 0) || 0));
+//                              ^^^^^^^^^^^^^ 未指定 topN 时也被抬到 1</pre>
+  <p>
+    <code>Math.max(1, …)</code> 让“用户没说取几名”等价于“只取第 1 名”。
+    条形图和气泡图各有一处，所以两张图的症状完全一致。
+  </p>
+
+  <h3>缺陷 2：排名解析只认阿拉伯数字</h3>
+  <pre>// 修复前
+const match = /(?:前|top|TOP)\s*(\d{1,3})/i.exec(query);   // “前五名”没有数字 → 匹配失败</pre>
+  <p>中文提问里“前五名 / 前十 / 第三名”极常见，全部被漏掉。</p>
+
+  <h3>缺陷 3：航司、机场名字没有字典</h3>
+  <p>
+    <code>extractFilters()</code> 从来没有为 <code>carriers</code> / <code>airports</code> 赋值——
+    库里是英文名加代码（<code>Alaska Airlines Inc.</code> / <code>AS</code>），用户说的是“Alaska Airlines”“美联航”“亚特兰大”，
+    中间缺一张对照表，于是这些筛选条件被静默丢弃。
+  </p>
+
+  <h3>附带问题：模型参数覆盖了规则抽取</h3>
+  <p>
+    原来的合并顺序是 <code>{ ...规则抽取, ...模型参数 }</code>，模型随手填的 <code>topN=1</code> 会盖掉更可靠的规则结果。
+  </p>
+
+  <h2>三、修复内容</h2>
+  <table>
+    <tr><th style="width:30%">修复</th><th>做法</th><th style="width:26%">文件</th></tr>
+    <tr>
+      <td>topN 语义</td>
+      <td>0 / 未指定 = 不限制；同时区分文案“取前 N 名”与“共 N 个分组”</td>
+      <td><code>dashboard-bar.tool.ts</code><br /><code>dashboard-bubble.tool.ts</code></td>
+    </tr>
+    <tr>
+      <td>中文排名解析</td>
+      <td>新增 <code>parseCjkNumber</code>（五→5、二十五→25、一百二十→120），
+          支持「前N名 / 第N名 / Top N」，并用负向先行断言排除「当前 / 之前 / 目前」</td>
+      <td><code>param-extractor.ts</code></td>
+    </tr>
+    <tr>
+      <td>实体字典</td>
+      <td>启动时从现有 <code>getFilterOptions</code> 载入 <b>23 家航司 / 378 个机场</b>，
+          加中文别名表（美联航→UA、阿拉斯加航空→AS、亚特兰大→ATL…），
+          三层匹配：字面代码 → 中文别名 → 英文名称词</td>
+      <td><code>entity-dictionary.ts</code><br /><code>entity-dictionary.service.ts</code><br /><code>entity-aliases.ts</code></td>
+    </tr>
+    <tr>
+      <td>参数优先级</td>
+      <td>字面量参数（年份 / 排名 / 航司 / 机场 / 数值范围）规则优先，语义参数（维度 / 指标）模型优先</td>
+      <td><code>ai-agent.service.ts</code></td>
+    </tr>
+    <tr>
+      <td>数值范围筛选</td>
+      <td>支持「超过 500 万」「低于 3 千」等表达，映射到既有 min/max 查询契约</td>
+      <td><code>param-extractor.ts</code></td>
+    </tr>
+    <tr>
+      <td>筛选条件回显</td>
+      <td>工具结果新增 <code>meta.filters</code>，供前端展示“本次到底筛了什么”</td>
+      <td>三个工具 + <code>flight.query</code></td>
+    </tr>
+    <tr>
+      <td>字典热重载</td>
+      <td><code>POST /api/ai-agent/tools/reload-entities</code>（仅管理员），数据重新入库后无需重启</td>
+      <td><code>ai-tool.controller.ts</code></td>
+    </tr>
+    <tr>
+      <td>脱敏加固</td>
+      <td>掩码从精确键名改为词根匹配，<code>contactEmail</code>、<code>user_token</code> 这类前缀键同样被脱敏</td>
+      <td><code>tool.types.ts</code></td>
+    </tr>
+  </table>
+
+  <h2>四、修复前后实测对照</h2>
+  <table>
+    <tr><th style="width:42%">提问</th><th style="width:29%">修复前</th><th style="width:29%">修复后</th></tr>
+    <tr><td>按航司统计取消航班的条形图</td><td class="bad">1 个分组</td><td class="good">23 个分组</td></tr>
+    <tr><td>…，取前五名</td><td class="bad">1 个分组（同上）</td><td class="good">取前 5 名，ExpressJet 137,042 领先</td></tr>
+    <tr><td>航司层级气泡图</td><td class="bad">1 家航司</td><td class="good">23 家航司</td></tr>
+    <tr><td>Alaska Airlines 航司层级气泡图</td><td class="bad">Southwest（忽略条件）</td><td class="good">仅 Alaska Airlines Inc.</td></tr>
+    <tr><td>2017年美联航的航班延误情况条形图</td><td class="bad">忽略年份与航司</td><td class="good">筛选：United Air Lines Inc.、2017 年</td></tr>
+    <tr><td>2018年3月亚特兰大机场的航班明细</td><td class="warn">机场条件被丢弃</td><td class="good">15 条，全部 ATL / 2018-03</td></tr>
+    <tr><td>总延误分钟超过 500 万的航司条形图</td><td class="bad">无范围筛选</td><td class="good">18 家航司（arr_delay ≥ 5,000,000）</td></tr>
+  </table>
+
+  <h2>五、验证结果</h2>
+  <div class="card">
+    <span class="pill">单元测试 23 项</span>
+    <span class="pill">E2E 回归 93 项</span>
+    <span class="pill">路由基线 14/14</span>
+  </div>
+  <ul>
+    <li>新增 <code>test/param-extractor.spec.ts</code>（14 项）：中文数字、排名、实体解析、数值范围。</li>
+    <li>新增 <code>test/tool-registry.spec.ts</code>（8 项）：匿名拒绝、管理员专属、停用、未知工具、错误文案、脱敏。</li>
+    <li>既有回归保持全绿：<code>verify-ai-tools</code> 42 / <code>verify-ai-agent</code> 31 / <code>verify-ai-cache</code> 20。</li>
+    <li>行为变化需清缓存才能复现：<code>ai:chat_cache:*</code> 默认 600 秒，否则仍会命中旧答案。</li>
+  </ul>
+
+  <h2>六、如何证明“携带用户身份、禁止越权”</h2>
+  <p>一条命令即可完整演示，脚本已随仓库提供：</p>
+  <pre>ADMIN_PASSWORD='&lt;管理员口令&gt;' node scripts/verification/demo-authz.mjs</pre>
+  <table>
+    <tr><th style="width:44%">验证项</th><th style="width:20%">实测结果</th><th>说明</th></tr>
+    <tr><td>匿名调用工具 / 对话 / 工具目录</td><td class="good">HTTP 401</td><td>JWT 守卫在最外层拦截，进不到工具层</td></tr>
+    <tr><td>普通用户启停工具</td><td class="good">HTTP 403</td><td>管理员专属接口</td></tr>
+    <tr><td>普通用户重载实体字典</td><td class="good">HTTP 403</td><td>管理员专属接口</td></tr>
+    <tr><td>普通用户请求审计 <code>scope=all</code></td><td class="good">200 / 他人记录 0 条</td><td>不可提权，查询被钉在自己名下</td></tr>
+    <tr><td>同一工具、两种身份查用户目录</td><td class="good">au***@… / 明文</td><td>身份进入工具，非管理员邮箱脱敏</td></tr>
+    <tr><td>管理员读他人会话</td><td class="good">HTTP 404</td><td>会话按归属隔离，管理员也不能越权</td></tr>
+    <tr><td>审计留痕</td><td class="good">tool.execute</td><td>记录 userId、工具名、参数（脱敏）、IP、耗时、结果码</td></tr>
+  </table>
+  <p>
+    单元层面同样被钉死：<code>ToolRegistryService.run()</code> 在执行业务逻辑前依次校验
+    身份存在 → 权限 → 参数合法性，任一不过直接返回 403 / 400 / 409 信封，业务代码根本不会被调用。
+  </p>
+</div>
+</body>
+</html>

@@ -145,7 +145,18 @@ export class FlightQueryTool extends BaseTool<FlightQueryParams, TablePayload> {
           rangeStart: result.rangeStart,
           rangeEnd: result.rangeEnd,
         },
-        meta: { keyword: params.keyword ?? null },
+        meta: {
+          keyword: params.keyword ?? null,
+          filters: {
+            ...(params.years?.length ? { years: params.years } : {}),
+            ...(params.months?.length ? { months: params.months } : {}),
+            ...(carriers?.length ? { carriers } : {}),
+            ...(airports?.length ? { airports } : {}),
+            ...(params.dateFrom ? { dateFrom: params.dateFrom } : {}),
+            ...(params.dateTo ? { dateTo: params.dateTo } : {}),
+            ...(params.ranges && Object.keys(params.ranges).length ? { ranges: params.ranges } : {}),
+          },
+        },
       },
     );
   }

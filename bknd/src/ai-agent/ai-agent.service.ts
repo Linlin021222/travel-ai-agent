@@ -16,6 +16,7 @@ import {
 } from './llm/llm.types.js';
 import { AiChatSessionService } from './services/ai-chat-session.service.js';
 import { AiOperationAuditService } from './services/ai-operation-audit.service.js';
+import { EntityDictionaryService } from './tools/entity-dictionary.service.js';
 import { ToolRegistryService } from './tools/tool-registry.service.js';
 import type { ToolResult } from './tools/tool.types.js';
 
@@ -84,6 +85,23 @@ type ToolEnvelope = ToolResult<unknown>;
 
 /** Max tools executed for one question — guards against runaway call loops. */
 const MAX_TOOL_CALLS = 4;
+
+/**
+ * Literal parameters the extractor reads off the question text.
+ *
+ * These are facts ("2017 年", "取前五名", "Alaska Airlines"), not inferences, so
+ * a rule-based value must not be overwritten by the model's guess.
+ */
+const RULE_FIRST_KEYS: ReadonlySet<string> = new Set([
+  'topN',
+  'years',
+  'months',
+  'carriers',
+  'airports',
+  'dateFrom',
+  'dateTo',
+  'ranges',
+]);
 /**
  * Max model↔tool round trips for one question. This is what turns the earlier
  * single-shot routing into real multi-step orchestration (compare two years,
@@ -139,6 +157,7 @@ export class AiAgentService {
     private readonly cache: AiCacheService,
     private readonly audit: AiOperationAuditService,
     private readonly tools: ToolRegistryService,
+    private readonly entities: EntityDictionaryService,
   ) {}
 
   /**
@@ -340,6 +359,10 @@ export class AiAgentService {
     meta?: { ipAddress?: string | null; userAgent?: string | null };
   }): Promise<AnswerOutcome> {
     const strategy = this.routingStrategy();
+
+    // Airline / airport names are only translated into code filters when the
+    // catalogue is present, so load it before any matching happens.
+    await this.entities.ensureLoaded();
 
     if (strategy === 'keyword') {
       const strong = this.tools.match(input.question);
@@ -556,7 +579,20 @@ export class AiAgentService {
       | null
       | undefined;
     if (!extracted) return fromModel;
-    return { ...extracted, ...fromModel };
+
+    // Literal filters (a year, "前五名", a named airline) are read straight off
+    // the question, so they outrank the model's guess. Semantic parameters
+    // (dimension / metric / keyword) stay model-first, because the model is
+    // better at inferring those from an implicit phrasing.
+    const merged: Record<string, unknown> = { ...fromModel };
+    for (const [key, value] of Object.entries(extracted)) {
+      if (value === undefined || value === null) continue;
+      if (Array.isArray(value) && value.length === 0) continue;
+      if (RULE_FIRST_KEYS.has(key) || merged[key] === undefined || merged[key] === null) {
+        merged[key] = value;
+      }
+    }
+    return merged;
   }
 
   private fromToolResult(

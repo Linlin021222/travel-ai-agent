@@ -27,11 +27,29 @@ Common environment variables (the scripts fall back to sensible defaults):
 
 ```bash
 ADMIN_PASSWORD='<your-admin-password>' node scripts/verification/verify-ai-tools.mjs   # 42 checks: tools, registry, audit
-node scripts/verification/verify-ai-agent.mjs                                          # 32 checks: sessions, streaming, memory
-node scripts/verification/verify-ai-cache.mjs                                          # 21 checks: Redis namespaces, isolation
+ADMIN_PASSWORD='<your-admin-password>' node scripts/verification/verify-ai-agent.mjs   # 31 checks: sessions, streaming, memory
+node scripts/verification/verify-ai-cache.mjs                                          # 20 checks: Redis namespaces, isolation
 ```
 
-Covers ~95 assertions in total. All three must be green before a change is merged.
+Covers ~93 assertions in total. All three must be green before a change is merged.
+
+Unit tests (no database needed) live in `bknd/test/` and are run with `npm test` inside `bknd/`:
+
+| File | Covers |
+|---|---|
+| `test/param-extractor.spec.ts` | Chinese numerals ("前五名"), entity resolution, numeric ranges |
+| `test/tool-registry.spec.ts` | anonymous refusal, admin-only tools, disabled/unknown tools, error text, audit masking |
+
+## Identity / authorisation demo
+
+```bash
+ADMIN_PASSWORD='<your-admin-password>' node scripts/verification/demo-authz.mjs
+```
+
+Proves, against the running stack, that anonymous calls are rejected (401), admin-only
+endpoints reject regular users (403), `scope=all` cannot escalate, tool results are masked
+per identity, sessions are isolated by owner, and every tool execution is audited with
+user id + IP.
 
 ## Benchmarks (before/after comparison)
 

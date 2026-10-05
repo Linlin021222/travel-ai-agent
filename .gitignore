@@ -22,3 +22,6 @@ Thumbs.db
 
 # Raw BTS flight archives: 7.2 GB, download separately (see trip_airline_delay/README.md)
 trip_airline_delay/*.csv
+
+# TypeScript incremental build info
+*.tsbuildinfo
