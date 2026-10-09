@@ -62,9 +62,40 @@ class StubTool extends BaseTool<{ fail?: boolean }, { ok: boolean }> {
   }
 }
 
+/**
+ * In-memory stand-in for `WriteGuardService`.
+ *
+ * The real one issues tokens through Redis; this keeps the registry tests
+ * hermetic while preserving the same single-use semantics.
+ */
+function guardStub() {
+  const tokens = new Map<string, { toolName: string; params: string }>();
+  let seq = 0;
+  return {
+    async precheck() {
+      return { ok: true, code: 0, message: 'ok', stage: 'business' as const };
+    },
+    async issue(input: { toolName: string; params: Record<string, unknown> }) {
+      const token = `token-${++seq}`;
+      tokens.set(token, { toolName: input.toolName, params: JSON.stringify(input.params) });
+      return { token, expiresInSec: 300 };
+    },
+    async consume(input: { token: string; toolName: string; params: Record<string, unknown> }) {
+      const entry = tokens.get(input.token);
+      if (!entry) return { ok: false, reason: '确认令牌不存在或已过期，请重新生成预览' };
+      if (entry.toolName !== input.toolName) return { ok: false, reason: '确认令牌与工具不匹配' };
+      if (entry.params !== JSON.stringify(input.params)) {
+        return { ok: false, reason: '参数已变更，请重新生成预览后再执行' };
+      }
+      tokens.delete(input.token);
+      return { ok: true };
+    },
+  };
+}
+
 function registryWith(tool: StubTool): ToolRegistryService {
   const audit = { record: vi.fn().mockResolvedValue(undefined) };
-  const registry = new ToolRegistryService(audit as never);
+  const registry = new ToolRegistryService(audit as never, guardStub() as never);
   registry.register(tool as never);
   return registry;
 }
@@ -157,7 +188,7 @@ describe('maskSensitive', () => {
       token: 'jwt-value',
       nested: { contactEmail: 'a@b.com' },
       note: 'ok',
-    }) as Record<string, never>;
+    }) as unknown as Record<string, unknown>;
 
     expect(masked.password).toBe('***');
     expect(masked.token).toBe('***');

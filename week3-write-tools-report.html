@@ -1,0 +1,311 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>第三周交付报告 · 前后端联调验证 + 写入工具安全管控</title>
+    <style>
+      :root {
+        --bg: #f7f8fa;
+        --card: #ffffff;
+        --ink: #1f2328;
+        --muted: #6b7280;
+        --line: #e5e7eb;
+        --brand: #2563eb;
+        --good: #15803d;
+        --good-bg: #dcfce7;
+        --warn: #b45309;
+        --warn-bg: #fef3c7;
+        --bad: #b91c1c;
+        --bad-bg: #fee2e2;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        padding: 32px 20px 64px;
+        background: var(--bg);
+        color: var(--ink);
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+          "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+        line-height: 1.7;
+        font-size: 15px;
+      }
+      .wrap { max-width: 960px; margin: 0 auto; }
+      header { margin-bottom: 28px; }
+      h1 { font-size: 26px; margin: 0 0 8px; letter-spacing: -0.01em; }
+      .sub { color: var(--muted); font-size: 14px; }
+      section {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 20px 22px;
+        margin-bottom: 18px;
+      }
+      h2 { font-size: 18px; margin: 0 0 4px; }
+      h2 .num { color: var(--brand); margin-right: 8px; }
+      .lead { color: var(--muted); font-size: 13.5px; margin: 0 0 16px; }
+      table { width: 100%; border-collapse: collapse; font-size: 14px; }
+      th, td { text-align: left; padding: 9px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+      th { color: var(--muted); font-weight: 600; font-size: 13px; background: #fafafa; }
+      tr:last-child td { border-bottom: none; }
+      code {
+        background: #f1f5f9;
+        padding: 1px 5px;
+        border-radius: 4px;
+        font-size: 13px;
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      }
+      .tag { display: inline-block; padding: 1px 8px; border-radius: 999px; font-size: 12px; font-weight: 600; }
+      .ok { background: var(--good-bg); color: var(--good); }
+      .warn { background: var(--warn-bg); color: var(--warn); }
+      .no { background: var(--bad-bg); color: var(--bad); }
+      .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin: 6px 0 2px; }
+      .stat { border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; }
+      .stat .k { font-size: 22px; font-weight: 700; letter-spacing: -0.02em; }
+      .stat .l { color: var(--muted); font-size: 12.5px; }
+      .chain { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 6px 0 2px; }
+      .chain .step {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 8px 12px;
+        font-size: 13.5px;
+        background: #fafafa;
+      }
+      .chain .arrow { color: var(--muted); }
+      .chain .gate { border-color: #fbbf24; background: var(--warn-bg); font-weight: 600; }
+      ul { margin: 8px 0 0; padding-left: 20px; }
+      li { margin-bottom: 5px; }
+      .note { border-left: 3px solid var(--brand); background: #eff6ff; padding: 10px 14px; border-radius: 0 8px 8px 0; font-size: 13.5px; margin-top: 12px; }
+      .kicker { font-size: 13px; color: var(--muted); margin-top: 10px; }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <header>
+        <h1>第三周交付报告 · 前后端联调验证 + 写入工具安全管控</h1>
+        <div class="sub">
+          文旅出行 AI Agent · 2026-10-09 · 全部数字均为实跑实测（清缓存后），可复现
+        </div>
+      </header>
+
+      <section>
+        <h2><span class="num">01</span>结论速览</h2>
+        <p class="lead">两块任务全部完成，并以脚本固化成可重复运行的回归。</p>
+        <div class="grid">
+          <div class="stat"><div class="k">57 / 57</div><div class="l">联调 + 写入链路断言</div></div>
+          <div class="stat"><div class="k">18 / 18</div><div class="l">存储层合规性断言</div></div>
+          <div class="stat"><div class="k">36 / 36</div><div class="l">单元测试（新增 10 项）</div></div>
+          <div class="stat"><div class="k">96 / 96</div><div class="l">原有回归未破（45+31+20）</div></div>
+          <div class="stat"><div class="k">0</div><div class="l">未确认却落库的写入</div></div>
+          <div class="stat"><div class="k">P50 20–29ms</div><div class="l">单工具调用耗时</div></div>
+        </div>
+        <div class="note">
+          写入工具的核心不是"能写"，而是<strong>写不了</strong>：没有人工确认令牌，任何路径（聊天、接口、模型）都只能拿到预览。
+        </div>
+      </section>
+
+      <section>
+        <h2><span class="num">02</span>写入链路：四步，缺一不可</h2>
+        <p class="lead">红线是"写入工具默认禁止自动执行，必须经过拦截层调度"——这条被代码强制，不是文档约定。</p>
+        <div class="chain">
+          <div class="step">① <strong>validate()</strong><br />参数 + 权限 + 业务规则</div>
+          <div class="arrow">→</div>
+          <div class="step">② <strong>getPreview()</strong><br />新旧值 diff + 风险提示</div>
+          <div class="arrow">→</div>
+          <div class="step gate">③ 人工确认<br />一次性令牌（5 分钟）</div>
+          <div class="arrow">→</div>
+          <div class="step">④ <strong>execute()</strong><br />再校验一次才落库</div>
+          <div class="arrow">→</div>
+          <div class="step">⑤ <strong>rollback()</strong><br />预留（含快照）</div>
+        </div>
+        <table>
+          <tr><th>保障</th><th>实现方式</th><th>实测证据</th></tr>
+          <tr>
+            <td>不自动执行</td>
+            <td><code>ToolRegistryService.run()</code> 检测到写入类且未确认 → 只返回 <code>preview</code></td>
+            <td><span class="tag ok">预览阶段用户查不到，未落库</span></td>
+          </tr>
+          <tr>
+            <td>令牌一次性</td>
+            <td>Redis <code>ai:write_confirm:</code>，消费即删</td>
+            <td><span class="tag ok">重放被拒（428）</span></td>
+          </tr>
+          <tr>
+            <td>防篡改</td>
+            <td>令牌绑定参数指纹；参数存服务端，前端只回传令牌</td>
+            <td><span class="tag ok">改参数被拒「参数已变更」</span></td>
+          </tr>
+          <tr>
+            <td>归属绑定</td>
+            <td>令牌记录 <code>userId</code>，换人不可用</td>
+            <td><span class="tag ok">不匹配即拒</span></td>
+          </tr>
+          <tr>
+            <td>双重校验</td>
+            <td>预览前校验 → 确认后再校验一遍（防预览后数据变化）</td>
+            <td><span class="tag ok">实现于 <code>runWrite()</code></span></td>
+          </tr>
+          <tr>
+            <td>审计留痕</td>
+            <td>预览记 <code>tool.write_preview</code>，执行记 <code>create/update/delete</code></td>
+            <td><span class="tag ok">两类审计均查到</span></td>
+          </tr>
+        </table>
+      </section>
+
+      <section>
+        <h2><span class="num">03</span>预校验：三类校验，失败即终止</h2>
+        <p class="lead">复用<strong>业务 DTO</strong>做参数校验，因此 AI 请求和 REST 请求报的是同一套错误。</p>
+        <table>
+          <tr><th>校验层</th><th>规则来源</th><th>实测拦截样例</th></tr>
+          <tr>
+            <td>参数合法性</td>
+            <td><code>CreateUserDto</code> / <code>UpdateFlightRecordDto</code>（class-validator）</td>
+            <td>非法邮箱、密码少于 8 位、月份 13、非法角色</td>
+          </tr>
+          <tr>
+            <td>权限校验</td>
+            <td>身份透传 + <code>adminOnly</code></td>
+            <td>普通用户调用写入工具 → <span class="tag ok">403 仅管理员可用</span></td>
+          </tr>
+          <tr>
+            <td>业务规则</td>
+            <td>业务 Service 自身校验方法</td>
+            <td>邮箱重复、目标不存在、删除自己、最后一位管理员</td>
+          </tr>
+        </table>
+        <div class="note">
+          错误信息带<strong>字段级明细</strong>（<code>meta.details: ["email: 邮箱格式不正确","password: 密码至少 8 位"]</code>），
+          与 <code>ValidationPipe</code> 返回格式一致，前端可直接展示。
+        </div>
+      </section>
+
+      <section>
+        <h2><span class="num">04</span>需求偏差（如实说明）</h2>
+        <p class="lead">任务写的 7 个写入工具已全部落地，但有两个前提在代码里原本不存在，我补齐了。</p>
+        <table>
+          <tr><th>任务原文</th><th>代码现状</th><th>处理方式</th></tr>
+          <tr>
+            <td>"注入现有 UserService，完成 validate()"</td>
+            <td>原本只有 <code>findByEmail / create / query</code>，<strong>没有 update / delete / batchDelete</strong></td>
+            <td>在 <code>UsersService</code> 补齐 4 个写方法 + 业务校验（重名、状态合法、自删保护、最后管理员保护）</td>
+          </tr>
+          <tr>
+            <td>"注入现有 AirlineService"（航班 3 类写操作）</td>
+            <td><code>FlightDelayService</code> 原本<strong>只有 5 个只读方法</strong></td>
+            <td>补齐 <code>createRecord / updateRecord / removeRecord / findRecordById</code> + 粒度唯一性（年-月-航司-机场）与字段范围校验</td>
+          </tr>
+        </table>
+        <p class="kicker">
+          补齐的写方法都放在<strong>业务 Service</strong>里，写入工具一行 SQL 都没有——合规走查脚本会持续守住这一点。
+        </p>
+      </section>
+
+      <section>
+        <h2><span class="num">05</span>联调与验收结果</h2>
+        <table>
+          <tr><th>验收项</th><th>结果</th><th>实测</th></tr>
+          <tr>
+            <td>工具返回与业务接口一致</td>
+            <td><span class="tag ok">通过</span></td>
+            <td>同一筛选下记录集合完全一致，<code>total</code> 1647 = 1647，21 个业务字段</td>
+          </tr>
+          <tr>
+            <td>权限校验生效 / 越权拦截</td>
+            <td><span class="tag ok">通过</span></td>
+            <td>匿名 401；普通用户调写入工具 403；<code>scope=all</code> 不提权（他人记录 0 条）</td>
+          </tr>
+          <tr>
+            <td>审计日志完整 + 脱敏</td>
+            <td><span class="tag ok">通过</span></td>
+            <td>含工具名/操作类型/耗时/IP/结果码；口令变 <code>***</code>，邮箱变 <code>st***@…</code></td>
+          </tr>
+          <tr>
+            <td>聊天触发工具 + 渲染</td>
+            <td><span class="tag ok">通过</span></td>
+            <td>图表 5 组、明细 15 行，均带 <code>resultType</code> 供前端分派</td>
+          </tr>
+          <tr>
+            <td>缓存生效</td>
+            <td><span class="tag ok">通过</span></td>
+            <td>3608ms → 32ms；明细类二次响应 37ms → 29ms</td>
+          </tr>
+          <tr>
+            <td>AI 模块无业务表 SQL</td>
+            <td><span class="tag ok">通过</span></td>
+            <td>扫描 63 个文件：无 <code>users</code> / <code>flight_delay</code> 的 SQL，无 <code>PG_POOL</code> 导入</td>
+          </tr>
+          <tr>
+            <td>4 张 AI 表无脏数据</td>
+            <td><span class="tag ok">通过</span></td>
+            <td>发现并修复 357 条 <code>duration_ms</code> 为 NULL 的历史审计（补 0）</td>
+          </tr>
+          <tr>
+            <td>Redis 命中与过期</td>
+            <td><span class="tag ok">通过</span></td>
+            <td>命名空间正确、命中生效；确认令牌 TTL 300 秒</td>
+          </tr>
+          <tr>
+            <td>单工具性能</td>
+            <td><span class="tag ok">通过</span></td>
+            <td>P50 20–29ms，P95 ≤ 30ms</td>
+          </tr>
+        </table>
+      </section>
+
+      <section>
+        <h2><span class="num">06</span>过程中修掉的 4 个真实缺陷</h2>
+        <table>
+          <tr><th>缺陷</th><th>影响</th><th>修复</th></tr>
+          <tr>
+            <td><code>preview()</code> 端点绕过了预校验</td>
+            <td>非法邮箱/重复邮箱也能生成预览，用户会去确认一个注定失败的操作</td>
+            <td>预览前强制执行同一套三层校验</td>
+          </tr>
+          <tr>
+            <td>业务接口不返回记录 <code>id</code></td>
+            <td>无法定位要改/删的那条航班记录，写入工具实际不可用</td>
+            <td><code>findAll</code> 增加 <code>id</code> 列（bigint 转 Number）</td>
+          </tr>
+          <tr>
+            <td>357 条审计 <code>duration_ms</code> 为 NULL</td>
+            <td>性能分位数统计失真</td>
+            <td>审计写入默认 0，并回填历史数据</td>
+          </tr>
+          <tr>
+            <td>「新建一个用户」被只读工具抢走</td>
+            <td>聊天里永远触发不到写入工具（强关键词 <code>用户</code> 属于 <code>user.query</code>）</td>
+            <td>写意图动词加权 + 实体词区分用户/航班记录；并允许模型选择写入工具（执行仍需令牌）</td>
+          </tr>
+        </table>
+      </section>
+
+      <section>
+        <h2><span class="num">07</span>怎么复现</h2>
+        <table>
+          <tr><th>命令</th><th>覆盖</th></tr>
+          <tr>
+            <td><code>ADMIN_PASSWORD='…' node scripts/verification/verify-write-tools.mjs</code></td>
+            <td>57 项：工具单链路 / 越权 / 审计 / 写入链路 / 聊天闭环 / 性能</td>
+          </tr>
+          <tr>
+            <td><code>ADMIN_PASSWORD='…' node scripts/verification/verify-storage-compliance.mjs</code></td>
+            <td>18 项：代码走查 / 4 张 AI 表 / Redis 命中与过期</td>
+          </tr>
+          <tr>
+            <td><code>cd bknd &amp;&amp; npx vitest run</code></td>
+            <td>36 项单测（含 10 项写入工具安全链）</td>
+          </tr>
+          <tr>
+            <td><code>ADMIN_PASSWORD='…' node scripts/verification/verify-ai-tools.mjs</code> 等三个</td>
+            <td>96 项原有回归</td>
+          </tr>
+        </table>
+        <div class="note">
+          跑之前请先清问答缓存，否则会命中 600 秒内的旧答案：
+          <code>docker exec flight-agent-redis redis-cli --scan --pattern 'ai:chat_cache:*' | xargs -r -n 50 docker exec flight-agent-redis redis-cli del</code>
+        </div>
+      </section>
+    </div>
+  </body>
+</html>

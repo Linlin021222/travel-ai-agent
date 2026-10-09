@@ -48,7 +48,11 @@ export class AiToolController {
   }
 
   @Post(':name/execute')
-  @ApiOperation({ summary: '直接执行指定工具（自动鉴权 + 审计埋点）' })
+  @ApiOperation({
+    summary: '直接执行指定工具（自动鉴权 + 审计埋点）',
+    description:
+      '只读工具直接返回结果；写入工具不会在此执行，只会返回变更预览与一次性确认令牌。',
+  })
   execute(
     @CurrentUser() user: AuthUser,
     @Param('name') name: string,
@@ -56,6 +60,40 @@ export class AiToolController {
     @Req() req: Request,
   ) {
     return this.registry.run(name, body?.params ?? {}, this.context(user, req));
+  }
+
+  @Post(':name/preview')
+  @ApiOperation({
+    summary: '生成写入工具的变更预览（写入类专用）',
+    description: '依次执行参数合法性、权限、业务规则三类校验，通过后签发一次性确认令牌。',
+  })
+  preview(
+    @CurrentUser() user: AuthUser,
+    @Param('name') name: string,
+    @Body() body: { params?: Record<string, unknown> },
+    @Req() req: Request,
+  ) {
+    return this.registry.preview(name, body?.params ?? {}, this.context(user, req));
+  }
+
+  @Post(':name/confirm')
+  @ApiOperation({
+    summary: '凭确认令牌执行写入工具（写入类专用）',
+    description:
+      '令牌由 preview 签发，绑定工具、调用者与参数指纹，一次性有效、5 分钟过期。',
+  })
+  confirm(
+    @CurrentUser() user: AuthUser,
+    @Param('name') name: string,
+    @Body() body: { params?: Record<string, unknown>; token?: string },
+    @Req() req: Request,
+  ) {
+    return this.registry.executeConfirmed(
+      name,
+      body?.params ?? {},
+      this.context(user, req),
+      body?.token ?? '',
+    );
   }
 
   @Patch(':name/enabled')

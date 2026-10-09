@@ -1,14 +1,16 @@
 import { createHash } from 'node:crypto';
 
 /**
- * The ONLY four key prefixes the AI module may use. Every Redis call must go
- * through `AiCacheService` so keys, TTLs and namespacing stay consistent.
+ * The key prefixes the AI module may use. Every Redis call must go through
+ * `AiCacheService` (or `WriteGuardService` for confirmation tokens) so keys,
+ * TTLs and namespacing stay consistent.
  */
 export const AI_CACHE_PREFIX = {
   session: 'ai:session:',
   chatCache: 'ai:chat_cache:',
   llmCache: 'ai:llm_cache:',
   taskState: 'ai:task_state:',
+  writeConfirm: 'ai:write_confirm:',
 } as const;
 
 export type AiCacheNamespace = keyof typeof AI_CACHE_PREFIX;
@@ -23,6 +25,8 @@ export const AI_CACHE_DEFAULT_TTL = {
   llmCache: 30 * 60,
   /** LangGraph task state. */
   taskState: 60 * 60,
+  /** Write confirmation tokens — deliberately short, single use. */
+  writeConfirm: 5 * 60,
 } as const;
 
 /** How many conversation turns the short term memory keeps (5 user + 5 AI). */
@@ -47,6 +51,11 @@ export function aiLlmCacheKey(provider: string, model: string, hash: string): st
 
 export function aiTaskStateKey(tenantId: string, threadId: string): string {
   return `${AI_CACHE_PREFIX.taskState}${tenantId}:${threadId}`;
+}
+
+/** Single-use token issued by the write interception layer. */
+export function aiWriteConfirmKey(token: string): string {
+  return `${AI_CACHE_PREFIX.writeConfirm}${token}`;
 }
 
 /** Stable, short fingerprint used inside cache keys. */

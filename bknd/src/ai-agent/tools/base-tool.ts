@@ -10,7 +10,8 @@ export type ToolPermission =
   | 'flight:read'
   | 'dashboard:read'
   | 'user:read'
-  | 'user:manage';
+  | 'user:manage'
+  | 'flight:write';
 
 /**
  * JSON Schema describing a tool's parameters, in the OpenAI

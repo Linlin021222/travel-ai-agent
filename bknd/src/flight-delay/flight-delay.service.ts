@@ -1,4 +1,10 @@
-import { Inject, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  Inject,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import type { Pool } from 'pg';
 import { PG_POOL } from '../database/database.module.js';
 import type { QueryFlightDelayDto } from './dto/query-flight-delay.dto.js';
@@ -26,6 +32,68 @@ import {
 } from './flight-delay.fields.js';
 
 type Dimension = 'years' | 'months' | 'carriers' | 'airports';
+
+/* -------------------------------------------------------------------------- */
+/* Write-model types (AI write tools)                                          */
+/* -------------------------------------------------------------------------- */
+
+/** Camel-case payload the write tools accept; mirrors {@link FlightDelayRow}. */
+export type FlightRecordInput = {
+  year: number;
+  month: number;
+  carrierCode: string;
+  carrierName: string;
+  airportCode: string;
+  airportName: string;
+} & Partial<Record<NumericField, number>>;
+
+type NormalizedRecord = {
+  year: number;
+  month: number;
+  carrierCode: string;
+  carrierName: string;
+  airportCode: string;
+  airportName: string;
+} & Record<NumericField, number>;
+
+/** Columns a write is allowed to touch — `id` and `created_at` are excluded. */
+const RECORD_WRITABLE_COLUMNS = [
+  'year',
+  'month',
+  'carrier_code',
+  'carrier_name',
+  'airport_code',
+  'airport_name',
+  ...NUMERIC_FIELDS,
+] as const;
+
+const RECORD_TO_COLUMN: Record<string, keyof NormalizedRecord> = {
+  year: 'year',
+  month: 'month',
+  carrier_code: 'carrierCode',
+  carrier_name: 'carrierName',
+  airport_code: 'airportCode',
+  airport_name: 'airportName',
+  arr_flights: 'arr_flights',
+  arr_del15: 'arr_del15',
+  carrier_ct: 'carrier_ct',
+  weather_ct: 'weather_ct',
+  nas_ct: 'nas_ct',
+  security_ct: 'security_ct',
+  late_aircraft_ct: 'late_aircraft_ct',
+  arr_cancelled: 'arr_cancelled',
+  arr_diverted: 'arr_diverted',
+  arr_delay: 'arr_delay',
+  carrier_delay: 'carrier_delay',
+  weather_delay: 'weather_delay',
+  nas_delay: 'nas_delay',
+  security_delay: 'security_delay',
+  late_aircraft_delay: 'late_aircraft_delay',
+};
+
+/** Accepted year window for hand-maintained records. */
+const RECORD_YEAR_MIN = 1990;
+const RECORD_YEAR_MAX = 2100;
 
 export interface FlightDelayOverview {
   carrierCount: number;
@@ -79,15 +147,17 @@ export class FlightDelayService {
     const safePage = Math.min(page, totalPages);
     const offset = (safePage - 1) * pageSize;
 
+    // `id` is selected so a caller (including the AI write tools) can address
+    // one row for update/delete without a second lookup.
     const rows = total
-      ? await this.pool.query<FlightDelayRow>(
-          `SELECT ${FLIGHT_DELAY_COLUMNS.join(', ')}
+      ? await this.pool.query<FlightDelayRow & { id: number }>(
+          `SELECT id, ${FLIGHT_DELAY_COLUMNS.join(', ')}
            FROM flight_delay${where.sql}
            ORDER BY ${orderBy}, id ASC
            LIMIT $${where.params.length + 1} OFFSET $${where.params.length + 2}`,
           [...where.params, pageSize, offset],
         )
-      : { rows: [] as FlightDelayRow[] };
+      : { rows: [] as Array<FlightDelayRow & { id: number }> };
 
     const rangeStart = total === 0 ? 0 : offset + 1;
     const rangeEnd = Math.min(offset + pageSize, total);
@@ -269,6 +339,180 @@ export class FlightDelayService {
       sql: clauses.length ? ` HAVING ${clauses.join(' AND ')}` : '',
       params,
     };
+  }
+
+  /* -------------------------------------------------------------------------- */
+  /* Write operations (added for the AI write tools)                            */
+  /*                                                                            */
+  /* The aggregate table has a natural key (year, month, carrier, airport), so  */
+  /* every mutation validates that key plus the numeric domains here. Tools     */
+  /* call these methods; they never touch the table themselves.                 */
+  /* -------------------------------------------------------------------------- */
+
+  async findRecordById(id: number): Promise<FlightDelayRow | null> {
+    const result = await this.pool.query<FlightDelayRow>(
+      `SELECT ${FLIGHT_DELAY_COLUMNS.join(', ')} FROM flight_delay WHERE id = $1 LIMIT 1`,
+      [id],
+    );
+    return result.rows[0] ?? null;
+  }
+
+  /** True when the natural key is already taken. */
+  async existsByGrain(grain: {
+    year: number;
+    month: number;
+    carrierCode: string;
+    airportCode: string;
+    excludeId?: number;
+  }): Promise<boolean> {
+    const params: unknown[] = [grain.year, grain.month, grain.carrierCode, grain.airportCode];
+    const exclude = grain.excludeId ? ` AND id <> $${params.push(grain.excludeId)}` : '';
+    const result = await this.pool.query<{ count: string }>(
+      `SELECT COUNT(*)::bigint AS count
+         FROM flight_delay
+        WHERE year = $1 AND month = $2 AND carrier_code = $3 AND airport_code = $4${exclude}`,
+      params,
+    );
+    return Number(result.rows[0]?.count ?? 0) > 0;
+  }
+
+  async createRecord(input: FlightRecordInput): Promise<FlightDelayRow> {
+    const row = this.normalizeRecord(input);
+
+    if (await this.existsByGrain(row)) {
+      throw new ConflictException(
+        `该记录已存在：${row.year}-${String(row.month).padStart(2, '0')} ${row.carrierCode} ${row.airportCode}`,
+      );
+    }
+
+    const values = this.toInsertValues(row);
+    const result = await this.pool.query<FlightDelayRow>(
+      `INSERT INTO flight_delay (${values.columns.join(', ')})
+       VALUES (${values.placeholders.join(', ')})
+       RETURNING ${FLIGHT_DELAY_COLUMNS.join(', ')}`,
+      values.params,
+    );
+    return result.rows[0];
+  }
+
+  async updateRecord(id: number, patch: Partial<FlightRecordInput>): Promise<FlightDelayRow> {
+    const current = await this.findRecordById(id);
+    if (!current) {
+      throw new NotFoundException('航班记录不存在');
+    }
+
+    const merged = this.normalizeRecord({
+      year: patch.year ?? current.year,
+      month: patch.month ?? current.month,
+      carrierCode: patch.carrierCode ?? current.carrier_code,
+      carrierName: patch.carrierName ?? current.carrier_name,
+      airportCode: patch.airportCode ?? current.airport_code,
+      airportName: patch.airportName ?? current.airport_name,
+      ...this.mergedMetrics(current, patch),
+    });
+
+    if (await this.existsByGrain({ ...merged, excludeId: id })) {
+      throw new ConflictException(
+        `已存在相同的年-月-航司-机场记录：${merged.year}-${String(merged.month).padStart(2, '0')} ${merged.carrierCode} ${merged.airportCode}`,
+      );
+    }
+
+    const sets: string[] = [];
+    const params: unknown[] = [];
+    for (const column of RECORD_WRITABLE_COLUMNS) {
+      params.push(merged[RECORD_TO_COLUMN[column]]);
+      sets.push(`${column} = $${params.length}`);
+    }
+    params.push(id);
+
+    const result = await this.pool.query<FlightDelayRow>(
+      `UPDATE flight_delay SET ${sets.join(', ')} WHERE id = $${params.length}
+       RETURNING ${FLIGHT_DELAY_COLUMNS.join(', ')}`,
+      params,
+    );
+    return result.rows[0];
+  }
+
+  async removeRecord(id: number): Promise<FlightDelayRow> {
+    const current = await this.findRecordById(id);
+    if (!current) {
+      throw new NotFoundException('航班记录不存在');
+    }
+    await this.pool.query('DELETE FROM flight_delay WHERE id = $1', [id]);
+    return current;
+  }
+
+  /** Validates and normalises a record payload. Throws 400 on bad input. */
+  private normalizeRecord(input: FlightRecordInput): NormalizedRecord {
+    const year = Math.trunc(Number(input.year));
+    const month = Math.trunc(Number(input.month));
+    if (!Number.isInteger(year) || year < RECORD_YEAR_MIN || year > RECORD_YEAR_MAX) {
+      throw new BadRequestException(`年份必须在 ${RECORD_YEAR_MIN}-${RECORD_YEAR_MAX} 之间`);
+    }
+    if (!Number.isInteger(month) || month < 1 || month > 12) {
+      throw new BadRequestException('月份必须在 1-12 之间');
+    }
+
+    const carrierCode = String(input.carrierCode ?? '').trim().toUpperCase();
+    const airportCode = String(input.airportCode ?? '').trim().toUpperCase();
+    const carrierName = String(input.carrierName ?? '').trim();
+    const airportName = String(input.airportName ?? '').trim();
+
+    if (!/^[A-Z0-9]{2,10}$/.test(carrierCode)) {
+      throw new BadRequestException('航司代码格式不正确（2-10 位字母或数字）');
+    }
+    if (!/^[A-Z0-9]{3}$/.test(airportCode)) {
+      throw new BadRequestException('机场代码必须是 3 位三字码');
+    }
+    if (!carrierName) throw new BadRequestException('航司名称不能为空');
+    if (!airportName) throw new BadRequestException('机场名称不能为空');
+
+    const metrics: Record<string, number> = {};
+    for (const field of NUMERIC_FIELDS) {
+      const raw = (input as Record<string, unknown>)[field];
+      const value = Number(raw ?? 0);
+      if (!Number.isFinite(value) || value < 0) {
+        throw new BadRequestException(`${field} 必须是非负数`);
+      }
+      metrics[field] = value;
+    }
+
+    return {
+      year,
+      month,
+      carrierCode,
+      carrierName,
+      airportCode,
+      airportName,
+      ...(metrics as Record<NumericField, number>),
+    };
+  }
+
+  private mergedMetrics(
+    current: FlightDelayRow,
+    patch: Partial<FlightRecordInput>,
+  ): Partial<FlightRecordInput> {
+    const out: Record<string, number> = {};
+    for (const field of NUMERIC_FIELDS) {
+      out[field] = Number((patch as Record<string, unknown>)[field] ?? current[field]);
+    }
+    return out as Partial<FlightRecordInput>;
+  }
+
+  private toInsertValues(row: NormalizedRecord): {
+    columns: string[];
+    placeholders: string[];
+    params: unknown[];
+  } {
+    const columns: string[] = [];
+    const params: unknown[] = [];
+    const placeholders: string[] = [];
+    for (const column of RECORD_WRITABLE_COLUMNS) {
+      columns.push(column);
+      params.push(row[RECORD_TO_COLUMN[column]]);
+      placeholders.push(`$${params.length}`);
+    }
+    return { columns, placeholders, params };
   }
 
   /**
@@ -472,13 +716,16 @@ function resolveOrderBy(dto: QueryFlightDelayDto): string {
   return `${column} ${dto.sortDir === 'asc' ? 'ASC' : 'DESC'}`;
 }
 
-function normalizeRow(row: FlightDelayRow): FlightDelayRow {
-  const output = {} as Record<string, unknown>;
+function normalizeRow(row: FlightDelayRow & { id?: number }): FlightDelayRow & { id?: number } {
+  const output: Record<string, unknown> = {};
+  // `id` is a bigint, which node-postgres hands back as a string. Callers
+  // (including the write tools' DTOs) expect a number.
+  if (row.id !== undefined) output.id = Number(row.id);
   for (const column of FLIGHT_DELAY_COLUMNS) {
     const value = row[column as keyof FlightDelayRow];
     output[column] = typeof value === 'string' && NUMERIC_FIELD_SET.has(column) ? Number(value) : value;
   }
-  return output as unknown as FlightDelayRow;
+  return output as unknown as FlightDelayRow & { id?: number };
 }
 
 export type { NumericField };

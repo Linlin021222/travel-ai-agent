@@ -22,6 +22,7 @@ import { AiToolController } from './controllers/ai-tool.controller.js';
 import { AI_TOOL_CLASSES, type BaseTool } from './tools/index.js';
 import { EntityDictionaryService } from './tools/entity-dictionary.service.js';
 import { ToolRegistryService } from './tools/tool-registry.service.js';
+import { WriteGuardService } from './tools/write/write-guard.service.js';
 import { DashboardModule } from '../dashboard/dashboard.module.js';
 import { FlightDelayModule } from '../flight-delay/flight-delay.module.js';
 import { UsersModule } from '../users/users.module.js';
@@ -88,6 +89,7 @@ export const TOOL_BOOTSTRAP: FactoryProvider = {
     AiTaskRecordService,
     AiOperationAuditService,
     EntityDictionaryService,
+    WriteGuardService,
     ...AI_TOOL_CLASSES,
     ToolRegistryService,
     TOOL_BOOTSTRAP,

@@ -3,7 +3,14 @@ import { apiRequest } from "./api";
 /* ------------------------------------------------------------------ types */
 
 /** Renderer selector — each value maps to exactly one message component. */
-export const CHAT_MESSAGE_TYPES = ["text", "table", "chart", "report", "confirm"] as const;
+export const CHAT_MESSAGE_TYPES = [
+  "text",
+  "table",
+  "chart",
+  "report",
+  "confirm",
+  "preview",
+] as const;
 export type ChatMessageType = (typeof CHAT_MESSAGE_TYPES)[number];
 
 export type ChatRole = "user" | "assistant" | "system";
@@ -107,7 +114,27 @@ export interface BubbleChartData {
 }
 
 export type ToolChartData = MetricCardData | BarChartData | BubbleChartData;
-export type ToolData = ToolChartData | TablePayload | null;
+export type ToolData = ToolChartData | TablePayload | WritePreviewData | null;
+
+/**
+ * What a write tool returns *instead of* executing.
+ *
+ * It deliberately carries no parameters: the arguments stay on the server,
+ * bound to `confirmationToken`, so the UI confirms with the token alone and a
+ * password never has to round-trip through the browser.
+ */
+export interface WritePreviewData {
+  previewType: "write-preview";
+  toolName: string;
+  action: "create" | "update" | "delete" | "batchDelete";
+  targetLabel: string;
+  affectedCount: number;
+  changes: Array<{ field: string; label: string; from: unknown; to: unknown }>;
+  warnings: string[];
+  requiresConfirmation: true;
+  confirmationToken: string;
+  expiresInSec: number;
+}
 
 /** Envelope every tool returns; `resultType` selects the renderer. */
 export interface ToolResultPayload<T = ToolData> {
@@ -250,6 +277,19 @@ export function sendChatMessage(options: SendChatOptions) {
     }));
   }
   return apiRequest<ChatReply>("/ai-agent/chat", { method: "POST", body });
+}
+
+/**
+ * Executes a write tool with the confirmation token from its preview.
+ *
+ * No parameters are sent: the server replays the ones it stored when the
+ * preview was issued, which is what makes "confirm" impossible to tamper with.
+ */
+export function confirmWriteTool(toolName: string, token: string) {
+  return apiRequest<ToolResultPayload>(`/ai-agent/tools/${toolName}/confirm`, {
+    method: "POST",
+    body: { token },
+  });
 }
 
 /* ----------------------------------------------------------------- helpers */

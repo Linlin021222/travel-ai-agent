@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
+<html lang="zh-CN" data-page-node-id="hSHuZCEecCUHNRfE7kqmcu">
+<head data-page-node-id="KsulcEWmcWDhtHmrPJgtdS">
+<meta charset="utf-8" data-page-node-id="j9ErQQkrmbywhkwcWn58CR" />
+<meta name="viewport" content="width=device-width, initial-scale=1" data-page-node-id="FTNYBCKMHcE50x46qjYBFV" />
 <title>工具参数修复报告 · 第三周</title>
 <style>
   :root {
@@ -74,166 +74,166 @@
   li { margin: 4px 0; }
 </style>
 </head>
-<body>
-<div class="wrap">
-  <h1>工具参数修复报告</h1>
-  <div class="sub">
+<body data-page-node-id="aSB1C8x13nDjB9nDRfIRbz">
+<div class="wrap" data-page-node-id="8AywDnXIlW8BTzBsQFypFp">
+  <h1 data-page-node-id="YboZa18D17HDnntI1F8Uft">工具参数修复报告</h1>
+  <div class="sub" data-page-node-id="2NqKeGnPRYifJ6A3kR9qzD">
     问题：同一问题换个说法（“取前五名”“Alaska Airlines”）答案不变 · 修复与验证记录 · 2026-10-05
   </div>
 
-  <h2>一、现象</h2>
-  <table>
-    <tr><th style="width:52%">提问</th><th>修复前返回</th><th>应该返回</th></tr>
-    <tr>
-      <td>按航司统计取消航班的条形图</td>
-      <td class="bad">1 个分组（ExpressJet 独占）</td>
-      <td>23 家航司对比</td>
+  <h2 data-page-node-id="FpwjTjqAiCgDHlpV50hQek">一、现象</h2>
+  <table data-page-node-id="C2kO3eeuv49xKvB8dVPWV1">
+    <tr data-page-node-id="dfANNj2x0V288LrjU7abdz"><th style="width:52%" data-page-node-id="lMkp9p2ezniI6sZfmtaI3X">提问</th><th data-page-node-id="Nc2EogEAUAB9d1OF4KSzlJ">修复前返回</th><th data-page-node-id="5PAuVNerzOHrJbYdIkHERb">应该返回</th></tr>
+    <tr data-page-node-id="snXYolTcYr4HqIXY0iEf8U">
+      <td data-page-node-id="9fxPHgOZggE4KPKQDb87gn">按航司统计取消航班的条形图</td>
+      <td class="bad" data-page-node-id="yf0EqaMQ188ouwwfQlYOig">1 个分组（ExpressJet 独占）</td>
+      <td data-page-node-id="2Dm1qHmvKUUg8S5IVQFpTT">23 家航司对比</td>
     </tr>
-    <tr>
-      <td>按航司统计取消航班的条形图，<b>取前五名</b></td>
-      <td class="bad">与上一问完全相同（1 个分组）</td>
-      <td>前 5 名，按取消量降序</td>
+    <tr data-page-node-id="wjcg5OKhFupF6tiPZwkOeJ">
+      <td data-page-node-id="DTpbUz63jinPag4Y5IISXG">按航司统计取消航班的条形图，<b data-page-node-id="EaR68Xc0VCl2TPPsP0TnHJ">取前五名</b></td>
+      <td class="bad" data-page-node-id="EkeBbM0hfM8M1jqTSn94FE">与上一问完全相同（1 个分组）</td>
+      <td data-page-node-id="wHdEOYnQcy7NN2j1H7wEn7">前 5 名，按取消量降序</td>
     </tr>
-    <tr>
-      <td>航司层级气泡图</td>
-      <td class="bad">1 个气泡（Southwest）</td>
-      <td>23 家航司气泡</td>
+    <tr data-page-node-id="ac1KndXGVxZkqotYQZY4EF">
+      <td data-page-node-id="4lCCL22b1ZKAkeUwzWKbZu">航司层级气泡图</td>
+      <td class="bad" data-page-node-id="DplZsX4KsWdbYuFEgIn2N6">1 个气泡（Southwest）</td>
+      <td data-page-node-id="tH6nkgTON4UIot06JetdQe">23 家航司气泡</td>
     </tr>
-    <tr>
-      <td><b>Alaska Airlines</b>航司层级气泡图</td>
-      <td class="bad">仍是 Southwest 那一个气泡</td>
-      <td>只显示 Alaska Airlines</td>
+    <tr data-page-node-id="EZnr47rQJB4a37iwtBGglD">
+      <td data-page-node-id="98weloAT0oum0D8gx7bDr5"><b data-page-node-id="fZhIvcuBxSYNPHoOf24Sp0">Alaska Airlines</b>航司层级气泡图</td>
+      <td class="bad" data-page-node-id="SkFdJNh8jh5GG111GCsYo0">仍是 Southwest 那一个气泡</td>
+      <td data-page-node-id="ehTbI2M7VHk8lc3kLQ7xdV">只显示 Alaska Airlines</td>
     </tr>
   </table>
-  <p>
-    结论：不是“回答呆板”，而是<b>参数抽取丢了信息</b>——用户说的“前五名”和“Alaska Airlines”根本没有传到工具，
+  <p data-page-node-id="x8YdS9hbP5TQjicN2E0sRd">
+    结论：不是“回答呆板”，而是<b data-page-node-id="3f12Lx0C7CELWzCqdaeccW">参数抽取丢了信息</b>——用户说的“前五名”和“Alaska Airlines”根本没有传到工具，
     两次提问因此落到了完全相同的参数上，输出自然一模一样。
   </p>
 
-  <h2>二、根因（三个缺陷叠加）</h2>
+  <h2 data-page-node-id="d8aoziQ0WNYwWtBmQHIlDX">二、根因（三个缺陷叠加）</h2>
 
-  <h3>缺陷 1：topN 默认值把“不限制”变成了 1</h3>
-  <pre>// 修复前 bknd/src/ai-agent/tools/dashboard-bar.tool.ts
+  <h3 data-page-node-id="S5ToqB51Vnqyba1GdS54hN">缺陷 1：topN 默认值把“不限制”变成了 1</h3>
+  <pre data-page-node-id="pClzIHQ4aWXrNxyn4XRokW">// 修复前 bknd/src/ai-agent/tools/dashboard-bar.tool.ts
 const topN = Math.min(100, Math.max(1, Math.trunc(params.topN ?? 0) || 0));
 //                              ^^^^^^^^^^^^^ 未指定 topN 时也被抬到 1</pre>
-  <p>
-    <code>Math.max(1, …)</code> 让“用户没说取几名”等价于“只取第 1 名”。
+  <p data-page-node-id="znHMCqemmK5n4K1GsJjzcg">
+    <code data-page-node-id="jEsXBG7z3NwZNFyI4oI73X">Math.max(1, …)</code> 让“用户没说取几名”等价于“只取第 1 名”。
     条形图和气泡图各有一处，所以两张图的症状完全一致。
   </p>
 
-  <h3>缺陷 2：排名解析只认阿拉伯数字</h3>
-  <pre>// 修复前
+  <h3 data-page-node-id="hFkc9PDFXd4oV3XLAcFMfb">缺陷 2：排名解析只认阿拉伯数字</h3>
+  <pre data-page-node-id="SFi3YrcxJle35RZYEJpQZr">// 修复前
 const match = /(?:前|top|TOP)\s*(\d{1,3})/i.exec(query);   // “前五名”没有数字 → 匹配失败</pre>
-  <p>中文提问里“前五名 / 前十 / 第三名”极常见，全部被漏掉。</p>
+  <p data-page-node-id="YEA5et66LpZxVVxZvnBHug">中文提问里“前五名 / 前十 / 第三名”极常见，全部被漏掉。</p>
 
-  <h3>缺陷 3：航司、机场名字没有字典</h3>
-  <p>
-    <code>extractFilters()</code> 从来没有为 <code>carriers</code> / <code>airports</code> 赋值——
-    库里是英文名加代码（<code>Alaska Airlines Inc.</code> / <code>AS</code>），用户说的是“Alaska Airlines”“美联航”“亚特兰大”，
+  <h3 data-page-node-id="OBB8ULz7YvsCGvU3EFDv8L">缺陷 3：航司、机场名字没有字典</h3>
+  <p data-page-node-id="K6DWtJ9E0eS0zE743mmAYq">
+    <code data-page-node-id="mXciWwT1QmHRZkMHzuxpCC">extractFilters()</code> 从来没有为 <code data-page-node-id="YnqQRaGOwcItApa3PpFAL1">carriers</code> / <code data-page-node-id="NhRD2mIrwUb0vFL7fvoHzq">airports</code> 赋值——
+    库里是英文名加代码（<code data-page-node-id="AdYnSZUSODb91xww5Z2Aui">Alaska Airlines Inc.</code> / <code data-page-node-id="fwboJqIySjD7hznP8PvwXA">AS</code>），用户说的是“Alaska Airlines”“美联航”“亚特兰大”，
     中间缺一张对照表，于是这些筛选条件被静默丢弃。
   </p>
 
-  <h3>附带问题：模型参数覆盖了规则抽取</h3>
-  <p>
-    原来的合并顺序是 <code>{ ...规则抽取, ...模型参数 }</code>，模型随手填的 <code>topN=1</code> 会盖掉更可靠的规则结果。
+  <h3 data-page-node-id="o7f9uqYkr0bcdtHl6BwtZV">附带问题：模型参数覆盖了规则抽取</h3>
+  <p data-page-node-id="EWvlHXqBU2uhuAjn04vOyy">
+    原来的合并顺序是 <code data-page-node-id="KeF6IydERoni1AJRZgFkbB">{ ...规则抽取, ...模型参数 }</code>，模型随手填的 <code data-page-node-id="0VYW7dcis6DmpDuCE3195S">topN=1</code> 会盖掉更可靠的规则结果。
   </p>
 
-  <h2>三、修复内容</h2>
-  <table>
-    <tr><th style="width:30%">修复</th><th>做法</th><th style="width:26%">文件</th></tr>
-    <tr>
-      <td>topN 语义</td>
-      <td>0 / 未指定 = 不限制；同时区分文案“取前 N 名”与“共 N 个分组”</td>
-      <td><code>dashboard-bar.tool.ts</code><br /><code>dashboard-bubble.tool.ts</code></td>
+  <h2 data-page-node-id="JMCUl8PMilmU3VnONNm3wO">三、修复内容</h2>
+  <table data-page-node-id="hQj0KHNynDwwzn7LpmfRGB">
+    <tr data-page-node-id="qG2RqCbq53d5FLWL0ZnD0i"><th style="width:30%" data-page-node-id="zORohe2ygRWtQ7Taq2bv0v">修复</th><th data-page-node-id="ADsvUyPpSTdlEIpRkCM2nN">做法</th><th style="width:26%" data-page-node-id="Fy7VmcEBJCXAjlVNrO2Cw9">文件</th></tr>
+    <tr data-page-node-id="Ly2f7uej3TiVB1XWIC7Ea5">
+      <td data-page-node-id="0AmNfzxA9y6SjJXIiRljWU">topN 语义</td>
+      <td data-page-node-id="oPX1GDgCO4dMGlF4OGa20N">0 / 未指定 = 不限制；同时区分文案“取前 N 名”与“共 N 个分组”</td>
+      <td data-page-node-id="0ZHUMrralFmN9Eeqf2Du5r"><code data-page-node-id="kd4pjm6RRxFiGDTb1DlyTR">dashboard-bar.tool.ts</code><br  data-page-node-id="LAWCUOl7T2ySHNZHZo9hwp"/><code data-page-node-id="c1IK2GB6vFwG2QnlR92jrk">dashboard-bubble.tool.ts</code></td>
     </tr>
-    <tr>
-      <td>中文排名解析</td>
-      <td>新增 <code>parseCjkNumber</code>（五→5、二十五→25、一百二十→120），
+    <tr data-page-node-id="kr2o7k7lAon8vDdvGPEbuK">
+      <td data-page-node-id="ABVGy5REkdvNZLSLyX9m3U">中文排名解析</td>
+      <td data-page-node-id="51NmYbCfmyLBSnOrlZrIZH">新增 <code data-page-node-id="W8BHiZixuOhgGAxNEoHd1S">parseCjkNumber</code>（五→5、二十五→25、一百二十→120），
           支持「前N名 / 第N名 / Top N」，并用负向先行断言排除「当前 / 之前 / 目前」</td>
-      <td><code>param-extractor.ts</code></td>
+      <td data-page-node-id="6wxCVKZ2wrK8EaqORQBLUz"><code data-page-node-id="YgDduvLAw4cBVqHK2wBPCG">param-extractor.ts</code></td>
     </tr>
-    <tr>
-      <td>实体字典</td>
-      <td>启动时从现有 <code>getFilterOptions</code> 载入 <b>23 家航司 / 378 个机场</b>，
+    <tr data-page-node-id="bhIejSHGYM8Z1dCm4m7FE5">
+      <td data-page-node-id="jvu69zMLwHLuv4Guf5ZHH9">实体字典</td>
+      <td data-page-node-id="TDD9wczE4N8qlakHob9nOp">启动时从现有 <code data-page-node-id="4gNqfDc8ZhVnhHTtyyDmo7">getFilterOptions</code> 载入 <b data-page-node-id="jyGqRYSCWONnacrHO5ZRuL">23 家航司 / 378 个机场</b>，
           加中文别名表（美联航→UA、阿拉斯加航空→AS、亚特兰大→ATL…），
           三层匹配：字面代码 → 中文别名 → 英文名称词</td>
-      <td><code>entity-dictionary.ts</code><br /><code>entity-dictionary.service.ts</code><br /><code>entity-aliases.ts</code></td>
+      <td data-page-node-id="Kz4CWU8ZFv8lZntja7Hj0d"><code data-page-node-id="AZVgFPajFtxfMi1sEouVAa">entity-dictionary.ts</code><br  data-page-node-id="2yuy1qRif1HYo6OUmlWQ46"/><code data-page-node-id="11yK5AYmIpU2XKaeEnpCZ0">entity-dictionary.service.ts</code><br  data-page-node-id="FQS1o9E8ltJLdNbJmw6V8G"/><code data-page-node-id="qEutSgSO44KYgCT2QxzxQS">entity-aliases.ts</code></td>
     </tr>
-    <tr>
-      <td>参数优先级</td>
-      <td>字面量参数（年份 / 排名 / 航司 / 机场 / 数值范围）规则优先，语义参数（维度 / 指标）模型优先</td>
-      <td><code>ai-agent.service.ts</code></td>
+    <tr data-page-node-id="lL5NDMGSOnuZSgwYfjmhFZ">
+      <td data-page-node-id="gXiOvJHACYOfegQcs9P9bV">参数优先级</td>
+      <td data-page-node-id="AT9TWLbxSAfS6vrsQ9RBlS">字面量参数（年份 / 排名 / 航司 / 机场 / 数值范围）规则优先，语义参数（维度 / 指标）模型优先</td>
+      <td data-page-node-id="51ryNZf0xFEc6dAsDYvTZr"><code data-page-node-id="Gy0SsA6L7IvPcXxP36VqfH">ai-agent.service.ts</code></td>
     </tr>
-    <tr>
-      <td>数值范围筛选</td>
-      <td>支持「超过 500 万」「低于 3 千」等表达，映射到既有 min/max 查询契约</td>
-      <td><code>param-extractor.ts</code></td>
+    <tr data-page-node-id="m0DbAeLvpYoWrEsKtBGw6m">
+      <td data-page-node-id="YGUUz4BJ0vGvAArjSkEGCU">数值范围筛选</td>
+      <td data-page-node-id="AEIK22RpItDNl1dgkHkpeU">支持「超过 500 万」「低于 3 千」等表达，映射到既有 min/max 查询契约</td>
+      <td data-page-node-id="BI3HAplrO47MQ67DZ5nws4"><code data-page-node-id="RGJpFnkDnYuhHUSyYqQPE4">param-extractor.ts</code></td>
     </tr>
-    <tr>
-      <td>延误原因筛选</td>
-      <td>「天气 / 空管 / 安检 / 航司原因 / 前序航班晚到」映射到
-          <code>weather_delay</code>、<code>nas_ct</code> 等 15 个数值字段（说“次数”时自动切到计数列）</td>
-      <td><code>param-extractor.ts</code></td>
+    <tr data-page-node-id="EG1ME1wL8Da8dAPlEsffKK">
+      <td data-page-node-id="nW4VePH0Oz10gtTBZmhlYv">延误原因筛选</td>
+      <td data-page-node-id="st7rlzSi92ihju59vb3A5V">「天气 / 空管 / 安检 / 航司原因 / 前序航班晚到」映射到
+          <code data-page-node-id="vYtVmoZ5VJzaciz7WNWXe6">weather_delay</code>、<code data-page-node-id="s9PtWLCMEDfxhBb2EzvCbi">nas_ct</code> 等 15 个数值字段（说“次数”时自动切到计数列）</td>
+      <td data-page-node-id="6XwsDEXfBPsqxBCOkWsb1y"><code data-page-node-id="BWWameWILRaM4D5SBT3nTP">param-extractor.ts</code></td>
     </tr>
-    <tr>
-      <td>筛选条件回显</td>
-      <td>工具结果新增 <code>meta.filters</code>，供前端展示“本次到底筛了什么”</td>
-      <td>三个工具 + <code>flight.query</code></td>
+    <tr data-page-node-id="0hVyDq8Hg9qSVCPkymdUqo">
+      <td data-page-node-id="4vpzIrMtvzKJvpcBDjEOFE">筛选条件回显</td>
+      <td data-page-node-id="NvLWFo47DyVDt6vhiUYtVD">工具结果新增 <code data-page-node-id="DJ7F3mec7cXeI77SJrfIge">meta.filters</code>，供前端展示“本次到底筛了什么”</td>
+      <td data-page-node-id="rvVAwYJibeGZj1l4PpGFfi">三个工具 + <code data-page-node-id="sV5AbU2GqNa6hSqnZOHs7N">flight.query</code></td>
     </tr>
-    <tr>
-      <td>字典热重载</td>
-      <td><code>POST /api/ai-agent/tools/reload-entities</code>（仅管理员），数据重新入库后无需重启</td>
-      <td><code>ai-tool.controller.ts</code></td>
+    <tr data-page-node-id="2IoHfOhK1deLWnsNcRvuFa">
+      <td data-page-node-id="r8m0YoyFXbF0uEqN3AUVfm">字典热重载</td>
+      <td data-page-node-id="1mNvqMzpNtfKJ2v1rr4zIT"><code data-page-node-id="D2pyeiR1WVVYp75gE4wthx">POST /api/ai-agent/tools/reload-entities</code>（仅管理员），数据重新入库后无需重启</td>
+      <td data-page-node-id="ElxAxAOB8JwmSr5b27tGVp"><code data-page-node-id="5l0O7BQVrZIa4KcNcwiwIZ">ai-tool.controller.ts</code></td>
     </tr>
-    <tr>
-      <td>脱敏加固</td>
-      <td>掩码从精确键名改为词根匹配，<code>contactEmail</code>、<code>user_token</code> 这类前缀键同样被脱敏</td>
-      <td><code>tool.types.ts</code></td>
+    <tr data-page-node-id="cHSKnR8VKzZK4EhDkULZUH">
+      <td data-page-node-id="rR8akZdpGdRCDEKrC7cawj">脱敏加固</td>
+      <td data-page-node-id="w3ZBUXtZ6tsynkdiyCJDkd">掩码从精确键名改为词根匹配，<code data-page-node-id="1GdzmvLKQCftQysVhjqvbD">contactEmail</code>、<code data-page-node-id="sAnAmoIrc9Lbd8Dgzzw80M">user_token</code> 这类前缀键同样被脱敏</td>
+      <td data-page-node-id="1J7hGcP4fejWSBn1HdBK1G"><code data-page-node-id="rVso9crpBhC8FH4HdJS91i">tool.types.ts</code></td>
     </tr>
   </table>
 
-  <h2>四、修复前后实测对照</h2>
-  <table>
-    <tr><th style="width:42%">提问</th><th style="width:29%">修复前</th><th style="width:29%">修复后</th></tr>
-    <tr><td>按航司统计取消航班的条形图</td><td class="bad">1 个分组</td><td class="good">23 个分组</td></tr>
-    <tr><td>…，取前五名</td><td class="bad">1 个分组（同上）</td><td class="good">取前 5 名，ExpressJet 137,042 领先</td></tr>
-    <tr><td>航司层级气泡图</td><td class="bad">1 家航司</td><td class="good">23 家航司</td></tr>
-    <tr><td>Alaska Airlines 航司层级气泡图</td><td class="bad">Southwest（忽略条件）</td><td class="good">仅 Alaska Airlines Inc.</td></tr>
-    <tr><td>2017年美联航的航班延误情况条形图</td><td class="bad">忽略年份与航司</td><td class="good">筛选：United Air Lines Inc.、2017 年</td></tr>
-    <tr><td>2018年3月亚特兰大机场的航班明细</td><td class="warn">机场条件被丢弃</td><td class="good">15 条，全部 ATL / 2018-03</td></tr>
-    <tr><td>总延误分钟超过 500 万的航司条形图</td><td class="bad">无范围筛选</td><td class="good">18 家航司（arr_delay ≥ 5,000,000）</td></tr>
-    <tr><td>天气原因延误超过 2 万 / 3 万的航司条形图</td><td class="bad">原因条件被丢弃</td><td class="good">6 组 / 2 组，随阈值收紧递减</td></tr>
-    <tr><td>空管原因延误超过 5 万的机场条形图</td><td class="bad">原因条件被丢弃</td><td class="good">9 个机场（nas_delay ≥ 50,000）</td></tr>
+  <h2 data-page-node-id="CZmWBODtrMxhj3P1YQoAmV">四、修复前后实测对照</h2>
+  <table data-page-node-id="4P7EDncG2SihpI77bHxdj1">
+    <tr data-page-node-id="MLCC3WpqFAbYxABaGdMyLQ"><th style="width:42%" data-page-node-id="PeM15g06cM8ZAZ3fTSWVZG">提问</th><th style="width:29%" data-page-node-id="jIc4WBzZf38fKwViF90pKl">修复前</th><th style="width:29%" data-page-node-id="8Vk0FfZwt67CNHSI5AGEQj">修复后</th></tr>
+    <tr data-page-node-id="EstQi1LwS85mma4VU4Gvsd"><td data-page-node-id="4xKyOgHBITfBug20uEYqB2">按航司统计取消航班的条形图</td><td class="bad" data-page-node-id="2uX2DFXoY3fTFX7ZPBOoZg">1 个分组</td><td class="good" data-page-node-id="etLNIORHrjlL0pJhIG6CSg">23 个分组</td></tr>
+    <tr data-page-node-id="x8RhgSoMbAAeBEDTSuIghC"><td data-page-node-id="I0tAvHw0A9yvNEvT2ZAxgT">…，取前五名</td><td class="bad" data-page-node-id="F94Ejf2mN2bC5SOLeuACDc">1 个分组（同上）</td><td class="good" data-page-node-id="DrCaMtUktkZeleiHkzj7Kx">取前 5 名，ExpressJet 137,042 领先</td></tr>
+    <tr data-page-node-id="CBW2xIthFabrhwRcHdanCT"><td data-page-node-id="wiBHxYHDZhsjy2T3vrqx7W">航司层级气泡图</td><td class="bad" data-page-node-id="962KHMdCZ9aekmFZci2Msu">1 家航司</td><td class="good" data-page-node-id="SiOIT8EuqCsA5oEoucCFrK">23 家航司</td></tr>
+    <tr data-page-node-id="gnNsoSd26Y93KAIavfKzgM"><td data-page-node-id="ijDJOyZNet587VAB54AFE2">Alaska Airlines 航司层级气泡图</td><td class="bad" data-page-node-id="LhjqHA6T7UU5njtmQJk6Dz">Southwest（忽略条件）</td><td class="good" data-page-node-id="2crtnJ0QHu1pGV6M1jYfkJ">仅 Alaska Airlines Inc.</td></tr>
+    <tr data-page-node-id="GxZimqDZoZ1YKUS71R6VZ4"><td data-page-node-id="oWfGP96esfYb9qXqqF1lo1">2017年美联航的航班延误情况条形图</td><td class="bad" data-page-node-id="UW7actevUHj3dOiHANUxBs">忽略年份与航司</td><td class="good" data-page-node-id="Z5ymUJfegD2YKyCRK3QDLr">筛选：United Air Lines Inc.、2017 年</td></tr>
+    <tr data-page-node-id="A9DsP2sv9gJpWUR6kxj9Ri"><td data-page-node-id="kYLvOo2PxyA3O8o6z8xwFE">2018年3月亚特兰大机场的航班明细</td><td class="warn" data-page-node-id="5O4pYflUBmz1XEZr8tvdGd">机场条件被丢弃</td><td class="good" data-page-node-id="MXGv5RVqTbUzCApFYAbEXi">15 条，全部 ATL / 2018-03</td></tr>
+    <tr data-page-node-id="SjXogGgjMLx6pVYidKmTDH"><td data-page-node-id="WhGSxdnc4XVaHZIi1mrlDO">总延误分钟超过 500 万的航司条形图</td><td class="bad" data-page-node-id="fTiUZ3BhvPZAo6397XJkMi">无范围筛选</td><td class="good" data-page-node-id="J3D4rCS3wxyw2pNqxW6ISH">18 家航司（arr_delay ≥ 5,000,000）</td></tr>
+    <tr data-page-node-id="YSMMh4a72BAmswYiNVFzck"><td data-page-node-id="oiGvn80I3KvdDomjYifh0B">天气原因延误超过 2 万 / 3 万的航司条形图</td><td class="bad" data-page-node-id="wvYsuASbh4fucTgumc1nQp">原因条件被丢弃</td><td class="good" data-page-node-id="w9K4e6nEFrMWVFDVO2lnQa">6 组 / 2 组，随阈值收紧递减</td></tr>
+    <tr data-page-node-id="4QZ8GNhifyb7cA9TbYQvxx"><td data-page-node-id="xJEObziFDtlFCzb6OdS0Tp">空管原因延误超过 5 万的机场条形图</td><td class="bad" data-page-node-id="ZNN0a6AVkXD4EDlt9iFmB3">原因条件被丢弃</td><td class="good" data-page-node-id="WUYehLak3X33a1kvIyZGg6">9 个机场（nas_delay ≥ 50,000）</td></tr>
   </table>
 
-  <h2>五、验证结果</h2>
-  <div class="card">
-    <span class="pill">单元测试 23 项</span>
-    <span class="pill">E2E 回归 93 项</span>
-    <span class="pill">路由基线 14/14</span>
+  <h2 data-page-node-id="2DI6i1UGYqjsXAwjGCp49q">五、验证结果</h2>
+  <div class="card" data-page-node-id="EhuCl9cly8wnCrkZHtma8f">
+    <span class="pill" data-page-node-id="ggHeKBFkBYYzWDaAE2ZpSg">单元测试 23 项</span>
+    <span class="pill" data-page-node-id="CXAPaPXF6b7q6Uy7hF0yGt">E2E 回归 93 项</span>
+    <span class="pill" data-page-node-id="cYUVUIp007vsy3jtNWoNvD">路由基线 14/14</span>
   </div>
-  <ul>
-    <li>新增 <code>test/param-extractor.spec.ts</code>（14 项）：中文数字、排名、实体解析、数值范围。</li>
-    <li>新增 <code>test/tool-registry.spec.ts</code>（8 项）：匿名拒绝、管理员专属、停用、未知工具、错误文案、脱敏。</li>
-    <li>既有回归保持全绿：<code>verify-ai-tools</code> 42 / <code>verify-ai-agent</code> 31 / <code>verify-ai-cache</code> 20。</li>
-    <li>行为变化需清缓存才能复现：<code>ai:chat_cache:*</code> 默认 600 秒，否则仍会命中旧答案。</li>
+  <ul data-page-node-id="7zkF9wXX8PRpcI2bZMOH3F">
+    <li data-page-node-id="Pf8hvnTC7GeGG8pRFFQdf3">新增 <code data-page-node-id="aCRVxzngE59CzaltfCnPt6">test/param-extractor.spec.ts</code>（14 项）：中文数字、排名、实体解析、数值范围。</li>
+    <li data-page-node-id="VtLQ89Ozfr0gjcZlxQXhRr">新增 <code data-page-node-id="gRxEZfH6cBkokime2EOzyL">test/tool-registry.spec.ts</code>（8 项）：匿名拒绝、管理员专属、停用、未知工具、错误文案、脱敏。</li>
+    <li data-page-node-id="93MdgMYmML1rsYhGcIuHE4">既有回归保持全绿：<code data-page-node-id="QQiYwJUDUxM90h4DA5SUu6">verify-ai-tools</code> 42 / <code data-page-node-id="sWck61bhXYKsSEu5OeDWes">verify-ai-agent</code> 31 / <code data-page-node-id="A3F60bbInmHJp1BTCI8b3y">verify-ai-cache</code> 20。</li>
+    <li data-page-node-id="aG9Lzk9T01JjZ8l8qpdsTM">行为变化需清缓存才能复现：<code data-page-node-id="2OFRKD5Tt3GyQfTRvMkEC1">ai:chat_cache:*</code> 默认 600 秒，否则仍会命中旧答案。</li>
   </ul>
 
-  <h2>六、如何证明“携带用户身份、禁止越权”</h2>
-  <p>一条命令即可完整演示，脚本已随仓库提供：</p>
-  <pre>ADMIN_PASSWORD='&lt;管理员口令&gt;' node scripts/verification/demo-authz.mjs</pre>
-  <table>
-    <tr><th style="width:44%">验证项</th><th style="width:20%">实测结果</th><th>说明</th></tr>
-    <tr><td>匿名调用工具 / 对话 / 工具目录</td><td class="good">HTTP 401</td><td>JWT 守卫在最外层拦截，进不到工具层</td></tr>
-    <tr><td>普通用户启停工具</td><td class="good">HTTP 403</td><td>管理员专属接口</td></tr>
-    <tr><td>普通用户重载实体字典</td><td class="good">HTTP 403</td><td>管理员专属接口</td></tr>
-    <tr><td>普通用户请求审计 <code>scope=all</code></td><td class="good">200 / 他人记录 0 条</td><td>不可提权，查询被钉在自己名下</td></tr>
-    <tr><td>同一工具、两种身份查用户目录</td><td class="good">au***@… / 明文</td><td>身份进入工具，非管理员邮箱脱敏</td></tr>
-    <tr><td>管理员读他人会话</td><td class="good">HTTP 404</td><td>会话按归属隔离，管理员也不能越权</td></tr>
-    <tr><td>审计留痕</td><td class="good">tool.execute</td><td>记录 userId、工具名、参数（脱敏）、IP、耗时、结果码</td></tr>
+  <h2 data-page-node-id="lsbLpruCtKeVoBeSsRKDBj">六、如何证明“携带用户身份、禁止越权”</h2>
+  <p data-page-node-id="r2R5kP3bMHKIzVpDfDLI4M">一条命令即可完整演示，脚本已随仓库提供：</p>
+  <pre data-page-node-id="h7j3OGlaLPSAnQ4taLJf2I">ADMIN_PASSWORD='&lt;管理员口令&gt;' node scripts/verification/demo-authz.mjs</pre>
+  <table data-page-node-id="Xbqi1o2yflq0f5CwUnEAEV">
+    <tr data-page-node-id="qNDH5DAkvyBCx9bJEnitrX"><th style="width:44%" data-page-node-id="K2EpBp4a7iQlivwzUh9BFB">验证项</th><th style="width:20%" data-page-node-id="hM0QorRm4S2NXHW0R8aA61">实测结果</th><th data-page-node-id="l5s8UFIoGCmZV8Iej6RQKy">说明</th></tr>
+    <tr data-page-node-id="vGA6Hs5bRPdjJIK0eZtvDu"><td data-page-node-id="ORg43ur1dwRUojoauEuAiC">匿名调用工具 / 对话 / 工具目录</td><td class="good" data-page-node-id="BbuuRe8d92uI6UOZd0m846">HTTP 401</td><td data-page-node-id="wKnAhs50n591GeMrJYFCam">JWT 守卫在最外层拦截，进不到工具层</td></tr>
+    <tr data-page-node-id="j7V3JpshEZJmsFXXfJOU0t"><td data-page-node-id="qS3OWewvwxGzjVhwWwJFkI">普通用户启停工具</td><td class="good" data-page-node-id="t31qmXL0JOsoPUvvhqEFAR">HTTP 403</td><td data-page-node-id="iQUA2Un9XSL7YuUJYWLzRV">管理员专属接口</td></tr>
+    <tr data-page-node-id="vE8u6hgmrrDSQAPJ8Ctgvu"><td data-page-node-id="XDAxf7KYC341wFlJC3xVQS">普通用户重载实体字典</td><td class="good" data-page-node-id="oBdoAslxAAhuvuswDj530r">HTTP 403</td><td data-page-node-id="otBIhxnjSc5NhP32RdI77C">管理员专属接口</td></tr>
+    <tr data-page-node-id="dJ82ec7G49OFcdbq18kQM9"><td data-page-node-id="TUWs0jUQxkdpKLmpyci3RH">普通用户请求审计 <code data-page-node-id="NnRyEafE7L08g3bBRCabVu">scope=all</code></td><td class="good" data-page-node-id="OZjlR29j5CZFC9fe1Qsf0k">200 / 他人记录 0 条</td><td data-page-node-id="Gas3wYIYEZSHXI6NGpjJXj">不可提权，查询被钉在自己名下</td></tr>
+    <tr data-page-node-id="4JYnROaEOZUPk5yczxyqAb"><td data-page-node-id="olnJump6hQrNjWP0EVi0wF">同一工具、两种身份查用户目录</td><td class="good" data-page-node-id="TzxusNuknHQf9tBbYSFp19">au***@… / 明文</td><td data-page-node-id="EgUIiXyjnm1cIXV3IXbjHi">身份进入工具，非管理员邮箱脱敏</td></tr>
+    <tr data-page-node-id="sWvfamCbDZinbvACMArKqS"><td data-page-node-id="HpXLGfnBKcdG1s2RiSupJq">管理员读他人会话</td><td class="good" data-page-node-id="fJZoQw2rdFmVWFbDrNOqVC">HTTP 404</td><td data-page-node-id="9AveUkTS4gSBS4hGl6wdlv">会话按归属隔离，管理员也不能越权</td></tr>
+    <tr data-page-node-id="9QFiXaGWWxS8reBHvjNNr8"><td data-page-node-id="PZ4r75iK8kZR8mfTygLeDf">审计留痕</td><td class="good" data-page-node-id="kHz2Y6XLBBLYXOY7QADi3A">tool.execute</td><td data-page-node-id="NRrt9KNrSJdv7ZAWNYbfUd">记录 userId、工具名、参数（脱敏）、IP、耗时、结果码</td></tr>
   </table>
-  <p>
-    单元层面同样被钉死：<code>ToolRegistryService.run()</code> 在执行业务逻辑前依次校验
+  <p data-page-node-id="sQ7jwk1HitDpqJmqD0dhFC">
+    单元层面同样被钉死：<code data-page-node-id="er6atYhYeRi4IJg5AZCMrC">ToolRegistryService.run()</code> 在执行业务逻辑前依次校验
     身份存在 → 权限 → 参数合法性，任一不过直接返回 403 / 400 / 409 信封，业务代码根本不会被调用。
   </p>
 </div>

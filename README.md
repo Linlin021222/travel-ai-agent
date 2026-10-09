@@ -238,6 +238,39 @@ the single largest one. Literal filters (year, top-N, carrier, airport, value ra
 outrank the model's guess, while semantic parameters (dimension, metric) stay
 model-first. Every tool result echoes the filters it applied in `meta.filters`.
 
+### Write tools (week 3)
+
+Read tools answer questions; write tools change data, so they are built
+differently on purpose.
+
+| Tool | Action | Business service |
+|---|---|---|
+| `user.create` | create | `UsersService.createManaged` |
+| `user.update` | update | `UsersService.updateManaged` |
+| `user.delete` | delete | `UsersService.removeManaged` |
+| `user.batchDelete` | batch delete | `UsersService.removeManyManaged` |
+| `flight-record.create` | create | `FlightDelayService.createRecord` |
+| `flight-record.update` | update | `FlightDelayService.updateRecord` |
+| `flight-record.delete` | delete | `FlightDelayService.removeRecord` |
+
+Rules enforced by the code, not by convention:
+
+- `BaseWriteTool` is a separate class in `tools/write/` — physically separated
+  from `BaseTool`, with four required methods: `validate()`, `getPreview()`,
+  `execute()` and `rollback()`.
+- A write tool **never** runs on its own. `ToolRegistryService.run()` converts an
+  unconfirmed call into a preview; only `executeConfirmed()` with a valid token
+  reaches `execute()`.
+- `WriteGuardService` runs three checks in order — parameter legality (reusing
+  the business DTOs through `class-validator`), permission, then business rules
+  delegated to the service (unique e-mail, status legality, last-admin guard).
+  Failures are returned in the same shape the REST API uses.
+- Confirmation tokens are single use, expire in 5 minutes, and are bound to the
+  tool, the caller **and** the arguments (which live in Redis, so the UI
+  confirms with a token alone — no password round-trip).
+- Write tools are marked `WRITE_DATA`, `adminOnly` and `autoExecute: false`; the
+  audit row records the real operation (`create` / `update` / `delete`).
+
 ### Hybrid routing
 
 Routing combines three paths instead of always asking the model:

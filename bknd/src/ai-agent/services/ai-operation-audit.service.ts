@@ -52,7 +52,11 @@ export class AiOperationAuditService {
       success: entry.success ?? true,
       ipAddress: context?.ipAddress ?? null,
       userAgent: context?.userAgent ?? null,
-      durationMs: entry.durationMs ?? null,
+      // Defaulted to 0 rather than NULL: a missing duration would break the
+      // per-tool latency percentiles the week-3 perf check relies on.
+      durationMs: typeof entry.durationMs === 'number' && entry.durationMs >= 0
+        ? entry.durationMs
+        : 0,
     });
     return this.audits.save(entity);
   }

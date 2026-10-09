@@ -74,16 +74,25 @@ const run = async () => {
 
   const list = await api(T, '/ai-agent/tools');
   const tools = list.body?.items ?? [];
-  check('registry lists 5 tools', tools.length === 5, `${tools.length}: ${tools.map((t) => t.name).join(', ')}`);
+  // 5 read tools + 7 write tools (week 3).
+  const readTools = tools.filter((t) => t.write !== true);
+  const writeTools = tools.filter((t) => t.write === true);
+  check('registry lists 12 tools (5 read + 7 write)', tools.length === 12, `${tools.length}: ${tools.map((t) => t.name).join(', ')}`);
+  check('read tools unchanged (5)', readTools.length === 5, readTools.map((t) => t.name).join(', '));
+  check('write tools registered (7)', writeTools.length === 7, writeTools.map((t) => t.name).join(', '));
   check(
     'every tool declares intent + permission',
     tools.every((t) => t.intent && t.permission && t.resultType),
   );
   const intents = [...new Set(tools.map((t) => t.intent))].sort();
   check(
-    'intents are QUERY_DATA / STATISTICS_ANALYSIS',
-    intents.join(',') === 'QUERY_DATA,STATISTICS_ANALYSIS',
+    'intents are QUERY_DATA / STATISTICS_ANALYSIS / WRITE_DATA',
+    intents.join(',') === 'QUERY_DATA,STATISTICS_ANALYSIS,WRITE_DATA',
     intents.join(','),
+  );
+  check(
+    'write tools never auto-execute and stay admin-only',
+    writeTools.every((t) => t.autoExecute === false && t.adminOnly === true),
   );
 
   /* ------------------------------------------------------------ 2 意图匹配 */

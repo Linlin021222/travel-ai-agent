@@ -8,12 +8,13 @@ export const TOOL_INTENTS = [
   'QUERY_DATA',
   'STATISTICS_ANALYSIS',
   'DATA_EXPORT',
+  'WRITE_DATA',
   'SYSTEM',
 ] as const;
 export type ToolIntent = (typeof TOOL_INTENTS)[number];
 
 /** Drives which front-end renderer is used. */
-export const RESULT_TYPES = ['text', 'table', 'chart', 'report'] as const;
+export const RESULT_TYPES = ['text', 'table', 'chart', 'report', 'preview'] as const;
 export type ResultType = (typeof RESULT_TYPES)[number];
 
 /* -------------------------------------------------------------------------- */
@@ -26,6 +27,14 @@ export interface ToolContext {
   sessionId?: string | null;
   ipAddress?: string | null;
   userAgent?: string | null;
+  /**
+   * Write-tool gate. Only present when the call carries a valid confirmation
+   * token issued by the pre-validation layer. Read tools ignore it.
+   */
+  execution?: {
+    confirmed?: boolean;
+    token?: string | null;
+  };
 }
 
 /* -------------------------------------------------------------------------- */
@@ -59,6 +68,8 @@ export const TOOL_ERR_VALIDATION = 400;
 export const TOOL_ERR_FORBIDDEN = 403;
 export const TOOL_ERR_NOT_FOUND = 404;
 export const TOOL_ERR_DISABLED = 409;
+/** Write tool called without a valid confirmation token. */
+export const TOOL_ERR_CONFIRM_REQUIRED = 428;
 export const TOOL_ERR_INTERNAL = 500;
 
 export function toolSuccess<D>(
@@ -171,6 +182,42 @@ export interface TableColumn {
 export interface TablePayload {
   columns: TableColumn[];
   rows: Record<string, unknown>[];
+}
+
+/* -------------------------------------------------------------------------- */
+/* Write-tools: preview before execution                                       */
+/* -------------------------------------------------------------------------- */
+
+export type WriteAction = 'create' | 'update' | 'delete' | 'batchDelete';
+
+export interface WritePreviewChange {
+  field: string;
+  label: string;
+  from: unknown;
+  to: unknown;
+}
+
+/**
+ * What a write tool hands back *instead of* executing.
+ *
+ * A write tool never mutates data on its own: the registry turns an
+ * unconfirmed call into this payload, and only a call carrying the matching
+ * confirmation token reaches `execute()`.
+ */
+export interface WritePreviewPayload {
+  previewType: 'write-preview';
+  toolName: string;
+  action: WriteAction;
+  /** Human description of what will be touched, e.g. 「用户 alice@example.com」. */
+  targetLabel: string;
+  affectedCount: number;
+  changes: WritePreviewChange[];
+  /** Business-rule warnings surfaced by pre-validation, e.g. 删除后不可恢复。 */
+  warnings: string[];
+  requiresConfirmation: true;
+  /** Opaque, single-use token; execution without it is refused. */
+  confirmationToken: string;
+  expiresInSec: number;
 }
 
 /* -------------------------------------------------------------------------- */

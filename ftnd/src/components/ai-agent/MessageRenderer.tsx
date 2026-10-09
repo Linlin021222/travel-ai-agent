@@ -16,6 +16,7 @@ import {
   type MetricCardData,
   type TablePayload,
   type ToolResultPayload,
+  type WritePreviewData,
 } from "@/lib/ai-agent";
 import type { ChatMessage } from "@/lib/ai-agent";
 import BarChartMessage from "./messages/BarChartMessage";
@@ -27,6 +28,7 @@ import ReportMessage from "./messages/ReportMessage";
 import TableMessage from "./messages/TableMessage";
 import TextMessage from "./messages/TextMessage";
 import ToolErrorMessage from "./messages/ToolErrorMessage";
+import WritePreviewMessage from "./messages/WritePreviewMessage";
 
 function formatSize(bytes?: number) {
   if (!bytes) return "";
@@ -157,6 +159,17 @@ export default function MessageRenderer({ message, onConfirm }: MessageRendererP
                 <BubbleChartMessage payload={toolResult?.data as BubbleChartData | null} />
               )}
               {chartType === null && <ChartMessage payload={message.payload as never} />}
+            </>
+          )}
+
+          {!isUser && !toolFailed && message.type === "preview" && (
+            <>
+              {message.content && (
+                <Typography variant="body2" sx={{ mb: 1, lineHeight: 1.7 }}>
+                  {message.content}
+                </Typography>
+              )}
+              <WritePreviewMessage payload={toolResult?.data as WritePreviewData | null} />
             </>
           )}
 
